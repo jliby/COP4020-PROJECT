@@ -50,7 +50,7 @@ public interface IToken {
 		EOF, // used as sentinal, does not correspond to input
 		ERROR, // use to avoid exceptions if scanning all input at once
 	}
-	
+
 	//returns the token kind
 	public Kind getKind();
 
@@ -75,4 +75,53 @@ public interface IToken {
 	public String getStringValue();
 
 	
+}
+
+class Token implements IToken{
+
+	public Kind type;
+	public String literal;
+	public int index;
+
+
+	public Token(Kind type, String literal, int index) {
+		this.type = type;
+		this.literal = literal;
+		this.index = index;
+	}
+
+	@Override
+	public Kind getKind() {
+		return null;
+	}
+
+	@Override
+	public String getText() {
+		return null;
+	}
+
+	@Override
+	public SourceLocation getSourceLocation() {
+		return null;
+	}
+
+	@Override
+	public int getIntValue() {
+		return 0;
+	}
+
+	@Override
+	public float getFloatValue() {
+		return 0;
+	}
+
+	@Override
+	public boolean getBooleanValue() {
+		return false;
+	}
+
+	@Override
+	public String getStringValue() {
+		return null;
+	}
 }
