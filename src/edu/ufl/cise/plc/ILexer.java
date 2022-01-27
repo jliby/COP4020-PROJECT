@@ -13,8 +13,8 @@ public interface ILexer {
 	IToken next() throws LexicalException;
 	IToken peek() throws LexicalException;
 	char advance();
-	void addToken(IToken type);
-	void addToken(IToken type, Object literal);
+	char addToken(IToken type);
+	char addToken(IToken type, Object literal);
 	boolean isAtEnd();
 	void scanToken();
 
@@ -22,6 +22,7 @@ public interface ILexer {
 }
 
   class Lexer implements ILexer {
+	  public StringCharactersStream chars;
 
 	Lexer() {
 
@@ -46,18 +47,19 @@ public interface ILexer {
 	 }
 
 	 @Override
-	 public void addToken(IToken type) {
-
+	 public char addToken(IToken type) {
+		return '0';
 	 }
 
 	 @Override
-	 public void addToken(IToken type, Object literal) {
-
+	 public char addToken(IToken type, Object literal) {
+		 current++;
+		 return source.charAt(current - 1);
 	 }
 
 	  @Override
 	  public boolean isAtEnd() {
-		return false;
+		  return current >= source.length();
 	  }
 	  @Override
 	  public void  scanToken() {
@@ -68,7 +70,7 @@ public interface ILexer {
 	  @Override
 	 public List<IToken> Scanner(String source) {
 		 while (!isAtEnd()) {
-			 // We are at the beginning of the next lexeme.
+			 // We are at the beginning of the next char.
 			 start = current;
 			 scanToken();
 		 }
@@ -77,5 +79,28 @@ public interface ILexer {
 		 return tokens;
 	 }
 
+
+ }
+
+ /*
+  * CLASS IMPLEMENTATAION TO MAINTAIN THE CHARACTERS IN THE SOURCE STRING
+  * StringCharactersStream class is a helper class that performs the following:
+  *
+  */
+
+ class StringCharactersStream {
+	// input is the source string
+	 String source_string = "";
+
+	 // current index of string
+	 int index =  0;
+
+	 // length of string
+	 int length = 0;
+
+	 // class constructor
+	public StringCharactersStream(String input_string) {
+		this.source_string = input_string;
+	}
 
  }

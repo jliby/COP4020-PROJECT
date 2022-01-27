@@ -81,23 +81,23 @@ class Token implements IToken{
 
 	public Kind type;
 	public String literal;
-	public int index;
+	int line;
+	int column;
 
 
-	public Token(Kind type, String literal, int index) {
+	public Token(Kind type, String literal) {
 		this.type = type;
 		this.literal = literal;
-		this.index = index;
 	}
 
 	@Override
 	public Kind getKind() {
-		return null;
+		return type;
 	}
 
 	@Override
 	public String getText() {
-		return null;
+		return literal;
 	}
 
 	@Override
@@ -107,21 +107,27 @@ class Token implements IToken{
 
 	@Override
 	public int getIntValue() {
-		return 0;
+		int lit = Integer.parseInt(literal);
+		return lit;
 	}
 
 	@Override
 	public float getFloatValue() {
-		return 0;
+		float lit = Float.parseFloat(literal);
+		return lit;
 	}
 
 	@Override
 	public boolean getBooleanValue() {
-		return false;
+		if (literal == "false") {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	@Override
 	public String getStringValue() {
-		return null;
+		return literal;
 	}
 }
