@@ -18,19 +18,20 @@ public interface ILexer {
 	boolean isAtEnd();
 	void scanToken();
 
-	List<IToken> Scanner(String source);
+	List<Token> Scanner(String source);
 }
 
   class Lexer implements ILexer {
-	  public StringCharactersStream chars;
 
-	Lexer() {
 
-	}
 	  int current = 0;
 	  int start = 0;
 	  int line = 1;
+	  String source = "";
 
+	  Lexer(String source) {
+		  this.source = source;
+	  }
 	 @Override
 	 public IToken next() throws LexicalException {
 		 return null;
@@ -68,8 +69,9 @@ public interface ILexer {
 
 
 	  @Override
-	 public List<IToken> Scanner(String source) {
-		 while (!isAtEnd()) {
+	 public List<Token> Scanner(String source) {
+		  List<Token> tokens = new ArrayList<>();
+		  while (!isAtEnd()) {
 			 // We are at the beginning of the next char.
 			 start = current;
 			 scanToken();
@@ -88,19 +90,19 @@ public interface ILexer {
   *
   */
 
- class StringCharactersStream {
-	// input is the source string
-	 String source_string = "";
-
-	 // current index of string
-	 int index =  0;
-
-	 // length of string
-	 int length = 0;
-
-	 // class constructor
-	public StringCharactersStream(String input_string) {
-		this.source_string = input_string;
-	}
-
- }
+// class StringCharactersStream {
+//	// input is the source string
+//	 String source_string = "";
+//
+//	 // current index of string
+//	 int index =  0;
+//
+//	 // length of string
+//	 int length = 0;
+//
+//	 // class constructor
+//	public StringCharactersStream(String input_string) {
+//		this.source_string = input_string;
+//	}
+//
+// }

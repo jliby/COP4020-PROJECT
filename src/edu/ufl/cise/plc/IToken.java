@@ -80,14 +80,17 @@ public interface IToken {
 class Token implements IToken{
 
 	public Kind type;
-	public String literal;
+	public Object literal;
 	int line;
 	int column;
+	String lexeme;
 
 
-	public Token(Kind type, String literal) {
+	public Token(Kind type, String lexeme, Object literal, int line) {
 		this.type = type;
+		this.lexeme = lexeme;
 		this.literal = literal;
+		this.line = line;
 	}
 
 	@Override
@@ -97,7 +100,7 @@ class Token implements IToken{
 
 	@Override
 	public String getText() {
-		return literal;
+		return literal.toString();
 	}
 
 	@Override
@@ -107,13 +110,13 @@ class Token implements IToken{
 
 	@Override
 	public int getIntValue() {
-		int lit = Integer.parseInt(literal);
+		int lit = Integer.parseInt(literal.toString());
 		return lit;
 	}
 
 	@Override
 	public float getFloatValue() {
-		float lit = Float.parseFloat(literal);
+		float lit = Float.parseFloat(literal.toString());
 		return lit;
 	}
 
@@ -128,6 +131,6 @@ class Token implements IToken{
 
 	@Override
 	public String getStringValue() {
-		return literal;
+		return literal.toString();
 	}
 }
