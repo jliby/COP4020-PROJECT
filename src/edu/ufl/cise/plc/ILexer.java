@@ -19,6 +19,8 @@ public interface ILexer {
 
 	char advance();
 
+	boolean match(char expected);
+
 	void addToken(IToken.Kind type);
 
 	void addToken(IToken.Kind type, Object literal);
@@ -61,6 +63,14 @@ public interface ILexer {
 
 			return null;
 		}
+		@Override
+		public boolean match(char expected) {
+			if (isAtEnd()) return false;
+			if (source.charAt(current) != expected) return false;
+
+			current++;
+			return true;
+		}
 
 		@Override
 		public char advance() {
@@ -81,6 +91,8 @@ public interface ILexer {
 		public void scanToken() {
 			char c = advance();
 			switch (c) {
+
+				// cases for single and double lexemes.
 				case'(': addToken(IToken.Kind.RPAREN); break;
 				case ')': addToken(IToken.Kind.LPAREN); break;
 				case '[' : addToken(IToken.Kind.RSQUARE); break;
@@ -93,8 +105,42 @@ public interface ILexer {
 				case ',' : addToken(IToken.Kind.COMMA); break;
 				case ';' : addToken(IToken.Kind.SEMI); break;
 				case '&' : addToken(IToken.Kind.AND); break;
-				case '|' : addToken(IToken.Kind.OR); break;
-				case '!' : addToken(IToken.Kind.BANG); break;
+				case '|' : addToken( IToken.Kind.OR); break;
+				case '!' : addToken(match('=') ? IToken.Kind.NOT_EQUALS : IToken.Kind.BANG); break;
+				case '=' : addToken(match('=') ? IToken.Kind.EQUALS : IToken.Kind.ASSIGN);
+				case '<' :
+						if (match('=') ){
+							addToken(IToken.Kind.LE);
+						}
+						else if (match('-')) {
+							addToken(IToken.Kind.LARROW);
+						}
+
+						else if (match('<')) {
+							addToken(IToken.Kind.LANGLE);
+						}
+
+						else {
+							addToken(IToken.Kind.LT);
+						}
+						break;
+				case '>' :
+						if (match('=') ){
+							addToken(IToken.Kind.GE);
+						}
+
+
+						else if (match('>')) {
+							addToken(IToken.Kind.RANGLE);
+						}
+
+						else {
+							addToken(IToken.Kind.GT);
+						}
+						break;
+
+				case '-' : addToken(match('>'));
+
 
 			}
 		}
