@@ -25,6 +25,9 @@ public interface ILexer {
 
 	void addToken(IToken.Kind type, Object literal);
 
+	void numberToLexeme();
+
+
 	boolean isAtEnd();
 
 	void scanToken();
@@ -80,6 +83,27 @@ public interface ILexer {
 
 			//next character in source string
 		}
+
+
+		private void string() {
+			while (peek() != '"' && !isAtEnd()) {
+				if (peek() == '\n') line++;
+				advance();
+			}
+
+			if (isAtEnd()) {
+//				Lox.error(line, "Unterminated string.");
+				return;
+			}
+
+			// The closing ".
+			advance();
+
+			// Trim the surrounding quotes.
+			String value = source.substring(start + 1, current - 1);
+			addToken(IToken.Kind.STRING_LIT, value);
+		}
+
 
 
 		@Override
@@ -145,13 +169,21 @@ public interface ILexer {
 				case '"': stringToLexeme(); break;
 
 				default:
-
+					if (Character.isDigit(c)) {
+						numberToLexeme();
+					} else {
+//						Lox.error(line, "Unexpected character.");
+					}
+					break;
 //new
 			}
 		}
 
 		@Override
 		public void stringToLexeme() {
+
+		}
+		public void numberToLexeme() {
 
 		}
 
