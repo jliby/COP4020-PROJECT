@@ -2,7 +2,7 @@ package edu.ufl.cise.plc;
 
 public interface IToken {
 
-	//test
+	//new
 
     public record SourceLocation(int line, int column) {}
 
