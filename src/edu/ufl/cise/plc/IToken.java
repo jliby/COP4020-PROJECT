@@ -90,7 +90,7 @@ class Token implements IToken{
 		this.type = type;
 		this.lexeme = lexeme;
 		this.literal = literal;
-		this.line = line;
+		this.line = this.line;
 	}
 
 	@Override

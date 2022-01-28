@@ -3,6 +3,8 @@ package edu.ufl.cise.plc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.ufl.cise.plc.IToken.Kind.EOF;
+
 public interface ILexer {
 
 	int current = 0;
@@ -13,8 +15,8 @@ public interface ILexer {
 	IToken next() throws LexicalException;
 	IToken peek() throws LexicalException;
 	char advance();
-	char addToken(IToken type);
-	char addToken(IToken type, Object literal);
+	void addToken(IToken.Kind type);
+	void addToken(IToken.Kind type, Object literal);
 	boolean isAtEnd();
 	void scanToken();
 
@@ -28,7 +30,7 @@ public interface ILexer {
 	  int start = 0;
 	  int line = 1;
 	  String source = "";
-
+	  List<Token> tokens = new ArrayList<>();
 	  Lexer(String source) {
 		  this.source = source;
 	  }
@@ -47,16 +49,6 @@ public interface ILexer {
 		 return 0;
 	 }
 
-	 @Override
-	 public char addToken(IToken type) {
-		return '0';
-	 }
-
-	 @Override
-	 public char addToken(IToken type, Object literal) {
-		 current++;
-		 return source.charAt(current - 1);
-	 }
 
 	  @Override
 	  public boolean isAtEnd() {
@@ -70,19 +62,30 @@ public interface ILexer {
 
 	  @Override
 	 public List<Token> Scanner(String source) {
-		  List<Token> tokens = new ArrayList<>();
 		  while (!isAtEnd()) {
-			 // We are at the beginning of the next char.
-			 start = current;
-			 scanToken();
-		 }
+			  // We are at the beginning of the next lexeme.
+			  start = current;
+			  scanToken();
+		  }
 
-//		 tokens.add(new Token("", null, line));
-		 return tokens;
+		  tokens.add(new Token(EOF, "", null, line));
+		  return tokens;
 	 }
+	  @Override
+	  public void addToken(IToken.Kind type) {
+		  addToken(type, null);
+	  }
+
+	  @Override
+	  public void addToken(IToken.Kind type, Object literal) {
+		  String text = source.substring(start, current);
+		  tokens.add(new Token(type, text, literal, line));
+	  }
 
 
  }
+
+
 
  /*
   * CLASS IMPLEMENTATAION TO MAINTAIN THE CHARACTERS IN THE SOURCE STRING
