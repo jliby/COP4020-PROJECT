@@ -81,18 +81,21 @@ public interface ILexer {
 		public void scanToken() {
 			char c = advance();
 			switch (c) {
+				case'(': addToken(IToken.Kind.RPAREN); break;
+				case ')': addToken(IToken.Kind.LPAREN); break;
+				case '[' : addToken(IToken.Kind.RSQUARE); break;
+				case ']' : addToken(IToken.Kind.LSQUARE); break;
+				case '+' : addToken(IToken.Kind.PLUS); break;
+				case '*' : addToken(IToken.Kind.TIMES); break;
+				case '-' : addToken(IToken.Kind.MINUS); break;
+				case '/' : addToken(IToken.Kind.DIV); break;
+				case '%' : addToken(IToken.Kind.MOD); break;
+				case ',' : addToken(IToken.Kind.COMMA); break;
+				case ';' : addToken(IToken.Kind.SEMI); break;
+				case '&' : addToken(IToken.Kind.AND); break;
+				case '|' : addToken(IToken.Kind.OR); break;
+				case '!' : addToken(IToken.Kind.BANG); break;
 
-				//		  example
-				//			  case '(': addToken(IToken.Kind.LEFT_PAREN); break;
-				//			  case ')': addToken(RIGHT_PAREN); break;
-				//			  case '{': addToken(LEFT_BRACE); break;
-				//			  case '}': addToken(RIGHT_BRACE); break;
-				//			  case ',': addToken(COMMA); break;
-				//			  case '.': addToken(DOT); break;
-				//			  case '-': addToken(MINUS); break;
-				//			  case '+': addToken(PLUS); break;
-				//			  case ';': addToken(SEMICOLON); break;
-				//			  case '*': addToken(STAR); break; // [slash]
 			}
 		}
 
@@ -122,28 +125,3 @@ public interface ILexer {
 
 	}
 }
-
-
-
-/*
-  * CLASS IMPLEMENTATAION TO MAINTAIN THE CHARACTERS IN THE SOURCE STRING
-  * StringCharactersStream class is a helper class that performs the following:
-  *
-  */
-
-// class StringCharactersStream {
-//	// input is the source string
-//	 String source_string = "";
-//
-//	 // current index of string
-//	 int index =  0;
-//
-//	 // length of string
-//	 int length = 0;
-//
-//	 // class constructor
-//	public StringCharactersStream(String input_string) {
-//		this.source_string = input_string;
-//	}
-//
-// }
