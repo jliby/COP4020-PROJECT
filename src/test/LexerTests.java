@@ -1,20 +1,18 @@
 package test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.junit.jupiter.api.Test;
-
 import edu.ufl.cise.plc.CompilerComponentFactory;
 import edu.ufl.cise.plc.ILexer;
 import edu.ufl.cise.plc.IToken;
 import edu.ufl.cise.plc.IToken.Kind;
+import edu.ufl.cise.plc.ILexer.Lexer;
 import edu.ufl.cise.plc.LexicalException;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class LexerTests {
 
-	ILexer getLexer(String input){
+	Lexer getLexer(String input){
 		 return CompilerComponentFactory.getLexer(input);
 	}
 	
@@ -72,7 +70,7 @@ public class LexerTests {
 	void testEmpty() throws LexicalException {
 		String input = "";
 		show(input);
-		ILexer lexer = getLexer(input);
+		Lexer lexer = getLexer(input);
 		checkEOF(lexer.next());
 	}
 	
@@ -84,7 +82,7 @@ public class LexerTests {
 				- 	 
 				""";
 		show(input);
-		ILexer lexer = getLexer(input);
+		Lexer lexer = (Lexer) getLexer(input);
 		checkToken(lexer.next(), Kind.PLUS, 0,0);
 		checkToken(lexer.next(), Kind.MINUS, 1,0);
 		checkEOF(lexer.next());

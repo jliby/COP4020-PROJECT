@@ -1,8 +1,8 @@
 package edu.ufl.cise.plc;
 
 public interface IToken {
-	
-    public record SourceLocation(int line, int column) {}  
+
+    public record SourceLocation(int line, int column) {}
 
 	public static enum Kind {
 		IDENT, 
@@ -74,63 +74,63 @@ public interface IToken {
 	//The delimiters should be removed and escape sequences replaced by the characters they represent.  
 	public String getStringValue();
 
-	
-}
 
-class Token implements IToken{
+	class Token implements IToken {
 
-	public Kind type;
-	public Object literal;
-	int line;
-	int column;
-	String lexeme;
+		public Kind type;
+		public Object literal;
+		int line;
+		int column;
+		String lexeme;
 
 
-	public Token(Kind type, String lexeme, Object literal, int line) {
-		this.type = type;
-		this.lexeme = lexeme;
-		this.literal = literal;
-		this.line = this.line;
-	}
+		public Token(Kind type, String lexeme, Object literal, int line) {
+			this.type = type;
+			this.lexeme = lexeme;
+			this.literal = literal;
+			this.line = this.line;
+		}
 
-	@Override
-	public Kind getKind() {
-		return type;
-	}
+		@Override
+		public Kind getKind() {
+			return type;
+		}
 
-	@Override
-	public String getText() {
-		return literal.toString();
-	}
+		@Override
+		public String getText() {
+			return literal.toString();
+		}
 
-	@Override
-	public SourceLocation getSourceLocation() {
-		return null;
-	}
+		@Override
+		public SourceLocation getSourceLocation() {
+			return null;
+		}
 
-	@Override
-	public int getIntValue() {
-		int lit = Integer.parseInt(literal.toString());
-		return lit;
-	}
+		@Override
+		public int getIntValue() {
+			int lit = Integer.parseInt(literal.toString());
+			return lit;
+		}
 
-	@Override
-	public float getFloatValue() {
-		float lit = Float.parseFloat(literal.toString());
-		return lit;
-	}
+		@Override
+		public float getFloatValue() {
+			float lit = Float.parseFloat(literal.toString());
+			return lit;
+		}
 
-	@Override
-	public boolean getBooleanValue() {
-		if (literal == "false") {
-			return false;
-		} else {
-			return true;
+		@Override
+		public boolean getBooleanValue() {
+			if (literal == "false") {
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		@Override
+		public String getStringValue() {
+			return literal.toString();
 		}
 	}
-
-	@Override
-	public String getStringValue() {
-		return literal.toString();
-	}
 }
+
