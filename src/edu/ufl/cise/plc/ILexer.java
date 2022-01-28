@@ -36,27 +36,55 @@ public interface ILexer {
 	  }
 	 @Override
 	 public IToken next() throws LexicalException {
+
+//		 if (current + 1 >= source.length()) return '\0';
+//		 return source.charAt(current + 1);
+
+		 // convert into token and return
 		 return null;
 	 }
 
 	 @Override
 	 public IToken peek() throws LexicalException {
+//		 if (isAtEnd()) return '\0';
+//		     return source.charAt(current);
+
+		 // convert into token and return
+
 		 return null;
 	 }
 
 	 @Override
 	 public char advance() {
-		 return 0;
+		 return source.charAt(current++);
+
+		 //next character in source string
 	 }
 
 
 	  @Override
 	  public boolean isAtEnd() {
 		  return current >= source.length();
+
+		  // check's if at end of lexeme
 	  }
 	  @Override
 	  public void  scanToken() {
+		  char c = advance();
+		  switch (c) {
 
+//		  example
+//			  case '(': addToken(IToken.Kind.LEFT_PAREN); break;
+//			  case ')': addToken(RIGHT_PAREN); break;
+//			  case '{': addToken(LEFT_BRACE); break;
+//			  case '}': addToken(RIGHT_BRACE); break;
+//			  case ',': addToken(COMMA); break;
+//			  case '.': addToken(DOT); break;
+//			  case '-': addToken(MINUS); break;
+//			  case '+': addToken(PLUS); break;
+//			  case ';': addToken(SEMICOLON); break;
+//			  case '*': addToken(STAR); break; // [slash]
+		  }
 	  }
 
 
