@@ -29,6 +29,8 @@ public interface ILexer {
 
 	void scanToken();
 
+	void stringToLexeme();
+
 	List<IToken.Token> Scanner(String source);
 
 	class Lexer implements ILexer {
@@ -99,15 +101,16 @@ public interface ILexer {
 				case ']' : addToken(IToken.Kind.LSQUARE); break;
 				case '+' : addToken(IToken.Kind.PLUS); break;
 				case '*' : addToken(IToken.Kind.TIMES); break;
-				case '-' : addToken(IToken.Kind.MINUS); break;
+				case '-' : addToken(match('>') ? IToken.Kind.RARROW : IToken.Kind.MINUS); break;
 				case '/' : addToken(IToken.Kind.DIV); break;
+				case '^' : addToken(IToken.Kind.RETURN); break;
 				case '%' : addToken(IToken.Kind.MOD); break;
 				case ',' : addToken(IToken.Kind.COMMA); break;
 				case ';' : addToken(IToken.Kind.SEMI); break;
 				case '&' : addToken(IToken.Kind.AND); break;
 				case '|' : addToken( IToken.Kind.OR); break;
 				case '!' : addToken(match('=') ? IToken.Kind.NOT_EQUALS : IToken.Kind.BANG); break;
-				case '=' : addToken(match('=') ? IToken.Kind.EQUALS : IToken.Kind.ASSIGN);
+				case '=' : addToken(match('=') ? IToken.Kind.EQUALS : IToken.Kind.ASSIGN); break;
 				case '<' :
 						if (match('=') ){
 							addToken(IToken.Kind.LE);
@@ -138,11 +141,18 @@ public interface ILexer {
 							addToken(IToken.Kind.GT);
 						}
 						break;
+					// scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
+				case '"': stringToLexeme(); break;
 
-				case '-' : addToken(match('>'));
+				default:
 
 
 			}
+		}
+
+		@Override
+		public void stringToLexeme() {
+
 		}
 
 
