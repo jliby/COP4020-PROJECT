@@ -141,7 +141,7 @@ public interface ILexer {
 							addToken(IToken.Kind.GT);
 						}
 						break;
-					// scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
+				// scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
 				case '"': stringToLexeme(); break;
 
 				default:
