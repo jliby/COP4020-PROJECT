@@ -86,10 +86,10 @@ public interface ILexer {
 
 
 		private void string() {
-			while (peek() != '"' && !isAtEnd()) {
+			/*while (peek() != '"' && !isAtEnd()) {
 				if (peek() == '\n') line++;
 				advance();
-			}
+			}*/
 
 			if (isAtEnd()) {
 //				Lox.error(line, "Unterminated string.");

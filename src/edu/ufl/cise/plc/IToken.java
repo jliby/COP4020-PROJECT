@@ -2,9 +2,8 @@ package edu.ufl.cise.plc;
 
 public interface IToken {
 
-	//new
+    public record SourceLocation(int line, int column) {}
 
-    public record SourceLocation(int line, int column);
 	public static enum Kind {
 		IDENT, 
 		INT_LIT, 
@@ -89,7 +88,7 @@ public interface IToken {
 			this.type = type;
 			this.lexeme = lexeme;
 			this.literal = literal;
-			this.line = this.line;
+			this.line = line;
 		}
 
 		@Override
@@ -130,7 +129,34 @@ public interface IToken {
 
 		@Override
 		public String getStringValue() {
-			return literal.toString();
+			String rawStr = literal.toString();
+			String returnStr = "";
+			for(int i = 1; i < rawStr.length()-1; i++) {
+				if(rawStr.charAt(i) == '\\') {
+					if (rawStr.charAt(i + 1) == 'b') {
+						returnStr += '\b';
+					} else if (rawStr.charAt(i + 1) == 't') {
+						returnStr += '\t';
+					} else if (rawStr.charAt(i + 1) == 'n') {
+						returnStr += '\n';
+					} else if (rawStr.charAt(i + 1) == 'f') {
+						returnStr += '\t';
+					} else if (rawStr.charAt(i + 1) == 'r') {
+						returnStr += '\r';
+					} else if (rawStr.charAt(i + 1) == '"') {
+						returnStr += '\"';
+					} else if (rawStr.charAt(i + 1) == '\'') {
+						returnStr += '\'';
+					} else if (rawStr.charAt(i + 1) == '\\') {
+						returnStr += '\\';
+					}
+					i++;
+				}
+				else {
+					returnStr += rawStr.charAt(i);
+				}
+			}
+			return returnStr;
 		}
 	}
 }
