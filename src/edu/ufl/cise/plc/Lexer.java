@@ -11,7 +11,7 @@ public class Lexer implements ILexer {
 
 
 
-     static {
+    static {
         keywords = new HashMap<>();
         keywords.put("if",    IToken.Kind.KW_IF);
         keywords.put("fi",    IToken.Kind.KW_FI);
