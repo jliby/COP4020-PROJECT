@@ -54,6 +54,8 @@ public class Lexer implements ILexer {
     int current = 0;
     int start = 0;
     int line = 1;
+    int column = 1;
+
     String source = "";
     List<IToken.Token> tokens = new ArrayList<>();
 
@@ -147,23 +149,9 @@ public class Lexer implements ILexer {
 //< keyword-type
     }
 
-    private void string() {
-        while (char_peek() != '"' && !isAtEnd()) {
-            if (char_peek() == '\n') line++;
-            advance();
-        }
-
-        if (isAtEnd()) {
-//				Lox.error(line, "Unterminated string.");
-            return;
-        }
-
-        // The closing ".
-        advance();
-
-        // Trim the surrounding quotes.
-        String value = source.substring(start + 1, current - 1);
-        addToken(IToken.Kind.STRING_LIT, value);
+    private void line_column_tracker() {
+        this.line+= 1;
+        this.column = 1;
     }
 
 
@@ -230,7 +218,7 @@ public class Lexer implements ILexer {
             // scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
             case '"': stringToLexeme(); break;
 
-            case '\n': line++; break;
+            case '\n': line_column_tracker(); break;
 
             default:
 
@@ -251,7 +239,10 @@ public class Lexer implements ILexer {
     @Override
     public void stringToLexeme() {
         while (char_peek() != '"' && !isAtEnd()) {
-            if (char_peek() == '\n') line++;
+            if (char_peek() == '\n') {
+                line++;
+                column = 0;
+            }
             advance();
         }
 
@@ -266,6 +257,7 @@ public class Lexer implements ILexer {
         // Trim the surrounding quotes.
         String value = source.substring(start + 1, current - 1);
         addToken(IToken.Kind.STRING_LIT, value);
+
     }
     @Override
     public void numberToLexeme() {
@@ -298,9 +290,10 @@ public class Lexer implements ILexer {
             // We are at the beginning of the next lexeme.
             start = current;
             scanToken();
+            column += 1;
         }
 
-        tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line));
+        tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line, column));
         return tokens;
     }
 
@@ -312,7 +305,7 @@ public class Lexer implements ILexer {
     @Override
     public void addToken(IToken.Kind type, Object literal) {
         String text = source.substring(start, current);
-        tokens.add(new IToken.Token(type, text, literal, line));
+        tokens.add(new IToken.Token(type, text, literal, line, column));
     }
 
 }

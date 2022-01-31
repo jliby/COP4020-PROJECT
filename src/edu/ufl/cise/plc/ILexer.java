@@ -8,6 +8,8 @@ public interface ILexer {
 	int current = 0;
 	int start = 0;
 	int line = 1;
+	int column = 1;
+
 	String source = null;
 	List<IToken> tokens = new ArrayList<>();
 
