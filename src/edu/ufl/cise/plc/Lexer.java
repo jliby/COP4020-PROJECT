@@ -138,14 +138,17 @@ public class Lexer implements ILexer {
         String text = source.substring(start, current);
 
         IToken.Kind type;
-        if (keywords.get(text).equals(null)) {
-            type = IToken.Kind.ERROR;
-        } else {
+        if (keywords.containsKey(text)) {
             type = keywords.get(text);
+            addToken(type, text);
+        } else {
+
+            addToken(IToken.Kind.IDENT, text);
+
 
         }
 
-        addToken(type, text);
+
 //< keyword-type
     }
 
