@@ -1,7 +1,9 @@
 package edu.ufl.cise.plc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static edu.ufl.cise.plc.IToken.Kind.EOF;
 
@@ -16,6 +18,9 @@ public interface ILexer {
 	IToken next() throws LexicalException;
 
 	IToken peek() throws LexicalException;
+
+	char char_peek();
+	char char_peekNext();
 
 	char advance();
 
@@ -32,12 +37,84 @@ public interface ILexer {
 
 	void scanToken();
 
+	boolean isAlpha(char c);
+
+	boolean isAlphaNumeric(char c);
+
+	boolean isDigit(char c);
+
 	void stringToLexeme();
 
 	List<IToken.Token> Scanner(String source);
 
 	class Lexer implements ILexer {
 
+		private Map<String, IToken.Kind> keywords;
+		private Map<String, IToken.Kind> colors;
+		private Map<String, IToken.Kind> color_op;
+		private Map<String, IToken.Kind> image_op;
+		private Map<String, IToken.Kind> type;
+
+
+
+		static {
+			HashMap<String, IToken.Kind> keywords = new HashMap<>();
+			keywords.put("if",    IToken.Kind.KW_IF);
+			keywords.put("fi",    IToken.Kind.KW_FI);
+			keywords.put("else",    IToken.Kind.KW_ELSE);
+			keywords.put("write",    IToken.Kind.KW_WRITE);
+			keywords.put("console",    IToken.Kind.KW_CONSOLE);
+			keywords.put("void",    IToken.Kind.KW_VOID);
+			keywords.put("if",    IToken.Kind.KW_IF);
+		}
+
+		// 'BLACK','BLUE','CYAN','DARK_GRAY','GRAY','GREEN','LIGHT_GRAY','MAGENTA','ORANGE','PINK',
+		// 'RED','WHITE','YELLOW'
+		static {
+			HashMap<String, IToken.Kind> color_const = new HashMap<>();
+			color_const.put("BLACK",    IToken.Kind.COLOR_CONST);
+			color_const.put("BLUE",    IToken.Kind.COLOR_CONST);
+			color_const.put("CYAN",    IToken.Kind.COLOR_CONST);
+			color_const.put("DARK_GRAY",    IToken.Kind.COLOR_CONST);
+			color_const.put("GRAY",    IToken.Kind.COLOR_CONST);
+			color_const.put("GREEN",    IToken.Kind.COLOR_CONST);
+			color_const.put("LIGHT_GRAY",    IToken.Kind.COLOR_CONST);
+			color_const.put("MAGENTA",    IToken.Kind.COLOR_CONST);
+			color_const.put("ORANGE",    IToken.Kind.COLOR_CONST);
+			color_const.put("PINK",    IToken.Kind.COLOR_CONST);
+
+		}
+		//getRed, getGreen, getBlue
+		static {
+			HashMap<String, IToken.Kind> color_op = new HashMap<>();
+			color_op.put("getRed", IToken.Kind.COLOR_OP);
+			color_op.put("getGreen", IToken.Kind.COLOR_OP);
+			color_op.put("getBlue", IToken.Kind.COLOR_OP);
+
+		}
+		//int, float, string, boolean, color, image
+		static {
+			HashMap<String, IToken.Kind> type = new HashMap<>();
+			type.put("int", IToken.Kind.TYPE);
+			type.put("float", IToken.Kind.TYPE);
+			type.put("string", IToken.Kind.TYPE);
+			type.put("boolean", IToken.Kind.TYPE);
+			type.put("color", IToken.Kind.TYPE);
+			type.put("image", IToken.Kind.TYPE);
+		}
+
+		static {
+			HashMap<String, IToken.Kind> image_op = new HashMap<>();
+			image_op.put("getWidth", IToken.Kind.IMAGE_OP);
+			image_op.put("getHeight", IToken.Kind.IMAGE_OP);
+
+
+		}
+		static {
+			HashMap<String, IToken.Kind> boolean_lit = new HashMap<>();
+			boolean_lit.put("true", IToken.Kind.BOOLEAN_LIT);
+			boolean_lit.put("false", IToken.Kind.BOOLEAN_LIT);
+		}
 
 		int current = 0;
 		int start = 0;
@@ -49,6 +126,34 @@ public interface ILexer {
 			this.source = source;
 		}
 
+		@Override
+		 public boolean isAlpha(char c) {
+			return (c >= 'a' && c <= 'z') ||
+					(c >= 'A' && c <= 'Z') ||
+					c == '_';
+		}
+
+		@Override
+		public boolean isAlphaNumeric(char c) {
+			return isAlpha(c) || isDigit(c);
+		}
+		//< is-alpha
+//> is-digit
+		@Override
+		public boolean isDigit(char c) {
+			return c >= '0' && c <= '9';
+		} // [is-digit]
+
+		@Override
+		public char char_peek() {
+			if (isAtEnd()) return '\0';
+			return source.charAt(current);
+		}
+		@Override
+		public char char_peekNext() {
+			if (current + 1 >= source.length()) return '\0';
+			return source.charAt(current + 1);
+		}
 		@Override
 		public IToken next() throws LexicalException {
 
@@ -86,10 +191,10 @@ public interface ILexer {
 
 
 		private void string() {
-			/*while (peek() != '"' && !isAtEnd()) {
-				if (peek() == '\n') line++;
+			while (char_peek() != '"' && !isAtEnd()) {
+				if (char_peek() == '\n') line++;
 				advance();
-			}*/
+			}
 
 			if (isAtEnd()) {
 //				Lox.error(line, "Unterminated string.");
@@ -181,10 +286,36 @@ public interface ILexer {
 
 		@Override
 		public void stringToLexeme() {
+			while (char_peek() != '"' && !isAtEnd()) {
+				if (char_peek() == '\n') line++;
+				advance();
+			}
 
+			// Unterminated string.
+			if (isAtEnd()) {
+				return;
+			}
+
+			// The closing ".
+			advance();
+
+			// Trim the surrounding quotes.
+			String value = source.substring(start + 1, current - 1);
+			addToken(IToken.Kind.STRING_LIT, value);
 		}
+		@Override
 		public void numberToLexeme() {
+			while (Character.isDigit(char_peek())) advance();
 
+			// Look for a fractional part.
+			if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
+				// Consume the "."
+				advance();
+
+				while (Character.isDigit(char_peek())) advance();
+			}
+
+			addToken(IToken.Kind.INT_LIT, Double.parseDouble(source.substring(start, current)));
 		}
 
 
