@@ -282,10 +282,12 @@ public class Lexer implements ILexer {
         }
 
         if (isFloat) {
-            addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
+            addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
+
 
         } else {
-            addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
+            addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
+
         }
     }
 
