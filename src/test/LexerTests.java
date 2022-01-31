@@ -1,12 +1,9 @@
 package test;
 
-import edu.ufl.cise.plc.CompilerComponentFactory;
-import edu.ufl.cise.plc.ILexer;
-import edu.ufl.cise.plc.IToken;
+import edu.ufl.cise.plc.*;
 import edu.ufl.cise.plc.IToken.Kind;
-import edu.ufl.cise.plc.ILexer.Lexer;
-import edu.ufl.cise.plc.LexicalException;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
