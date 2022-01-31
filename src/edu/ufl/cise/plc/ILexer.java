@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import static edu.ufl.cise.plc.IToken.Kind.EOF;
+import static edu.ufl.cise.plc.IToken.Kind.ERROR;
 
 public interface ILexer {
 
@@ -32,6 +33,7 @@ public interface ILexer {
 
 	void numberToLexeme();
 
+	void identifier();
 
 	boolean isAtEnd();
 
@@ -66,54 +68,35 @@ public interface ILexer {
 			keywords.put("console",    IToken.Kind.KW_CONSOLE);
 			keywords.put("void",    IToken.Kind.KW_VOID);
 			keywords.put("if",    IToken.Kind.KW_IF);
-		}
 
-		// 'BLACK','BLUE','CYAN','DARK_GRAY','GRAY','GREEN','LIGHT_GRAY','MAGENTA','ORANGE','PINK',
-		// 'RED','WHITE','YELLOW'
-		static {
-			HashMap<String, IToken.Kind> color_const = new HashMap<>();
-			color_const.put("BLACK",    IToken.Kind.COLOR_CONST);
-			color_const.put("BLUE",    IToken.Kind.COLOR_CONST);
-			color_const.put("CYAN",    IToken.Kind.COLOR_CONST);
-			color_const.put("DARK_GRAY",    IToken.Kind.COLOR_CONST);
-			color_const.put("GRAY",    IToken.Kind.COLOR_CONST);
-			color_const.put("GREEN",    IToken.Kind.COLOR_CONST);
-			color_const.put("LIGHT_GRAY",    IToken.Kind.COLOR_CONST);
-			color_const.put("MAGENTA",    IToken.Kind.COLOR_CONST);
-			color_const.put("ORANGE",    IToken.Kind.COLOR_CONST);
-			color_const.put("PINK",    IToken.Kind.COLOR_CONST);
+			keywords.put("BLACK",    IToken.Kind.COLOR_CONST);
+			keywords.put("BLUE",    IToken.Kind.COLOR_CONST);
+			keywords.put("CYAN",    IToken.Kind.COLOR_CONST);
+			keywords.put("DARK_GRAY",    IToken.Kind.COLOR_CONST);
+			keywords.put("GRAY",    IToken.Kind.COLOR_CONST);
+			keywords.put("GREEN",    IToken.Kind.COLOR_CONST);
+			keywords.put("LIGHT_GRAY",    IToken.Kind.COLOR_CONST);
+			keywords.put("MAGENTA",    IToken.Kind.COLOR_CONST);
+			keywords.put("ORANGE",    IToken.Kind.COLOR_CONST);
+			keywords.put("PINK",    IToken.Kind.COLOR_CONST);
 
-		}
-		//getRed, getGreen, getBlue
-		static {
-			HashMap<String, IToken.Kind> color_op = new HashMap<>();
-			color_op.put("getRed", IToken.Kind.COLOR_OP);
-			color_op.put("getGreen", IToken.Kind.COLOR_OP);
-			color_op.put("getBlue", IToken.Kind.COLOR_OP);
+			keywords.put("getRed", IToken.Kind.COLOR_OP);
+			keywords.put("getGreen", IToken.Kind.COLOR_OP);
+			keywords.put("getBlue", IToken.Kind.COLOR_OP);
 
-		}
-		//int, float, string, boolean, color, image
-		static {
-			HashMap<String, IToken.Kind> type = new HashMap<>();
-			type.put("int", IToken.Kind.TYPE);
-			type.put("float", IToken.Kind.TYPE);
-			type.put("string", IToken.Kind.TYPE);
-			type.put("boolean", IToken.Kind.TYPE);
-			type.put("color", IToken.Kind.TYPE);
-			type.put("image", IToken.Kind.TYPE);
-		}
-
-		static {
-			HashMap<String, IToken.Kind> image_op = new HashMap<>();
-			image_op.put("getWidth", IToken.Kind.IMAGE_OP);
-			image_op.put("getHeight", IToken.Kind.IMAGE_OP);
+			keywords.put("int", IToken.Kind.TYPE);
+			keywords.put("float", IToken.Kind.TYPE);
+			keywords.put("string", IToken.Kind.TYPE);
+			keywords.put("boolean", IToken.Kind.TYPE);
+			keywords.put("color", IToken.Kind.TYPE);
+			keywords.put("image", IToken.Kind.TYPE);
 
 
-		}
-		static {
-			HashMap<String, IToken.Kind> boolean_lit = new HashMap<>();
-			boolean_lit.put("true", IToken.Kind.BOOLEAN_LIT);
-			boolean_lit.put("false", IToken.Kind.BOOLEAN_LIT);
+			keywords.put("getWidth", IToken.Kind.IMAGE_OP);
+			keywords.put("getHeight", IToken.Kind.IMAGE_OP);
+
+			keywords.put("true", IToken.Kind.BOOLEAN_LIT);
+			keywords.put("false", IToken.Kind.BOOLEAN_LIT);
 		}
 
 		int current = 0;
@@ -189,6 +172,22 @@ public interface ILexer {
 			//next character in source string
 		}
 
+		@Override
+		public void identifier() {
+			while (isAlphaNumeric(char_peek())) advance();
+
+/* Scanning identifier < Scanning keyword-type
+    addToken(IDENTIFIER);
+*/
+//> keyword-type
+			// See if the identifier is a reserved word.
+			String text = source.substring(start, current);
+
+			IToken.Kind type = keywords.get(text);
+			if (type == null) type = ERROR;
+			addToken(type);
+//< keyword-type
+		}
 
 		private void string() {
 			while (char_peek() != '"' && !isAtEnd()) {
@@ -273,6 +272,8 @@ public interface ILexer {
 				// scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
 				case '"': stringToLexeme(); break;
 
+				case '\n': line++; break;
+
 				default:
 					if (Character.isDigit(c)) {
 						numberToLexeme();
@@ -327,7 +328,7 @@ public interface ILexer {
 				scanToken();
 			}
 
-			tokens.add(new IToken.Token(EOF, "", null, line));
+			tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line));
 			return tokens;
 		}
 
