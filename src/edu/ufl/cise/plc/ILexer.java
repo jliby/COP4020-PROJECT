@@ -127,7 +127,7 @@ public interface ILexer {
 		}
 
 		@Override
-		 public boolean isAlpha(char c) {
+		public boolean isAlpha(char c) {
 			return (c >= 'a' && c <= 'z') ||
 					(c >= 'A' && c <= 'Z') ||
 					c == '_';
@@ -241,35 +241,35 @@ public interface ILexer {
 				case '!' : addToken(match('=') ? IToken.Kind.NOT_EQUALS : IToken.Kind.BANG); break;
 				case '=' : addToken(match('=') ? IToken.Kind.EQUALS : IToken.Kind.ASSIGN); break;
 				case '<' :
-						if (match('=') ){
-							addToken(IToken.Kind.LE);
-						}
-						else if (match('-')) {
-							addToken(IToken.Kind.LARROW);
-						}
+					if (match('=') ){
+						addToken(IToken.Kind.LE);
+					}
+					else if (match('-')) {
+						addToken(IToken.Kind.LARROW);
+					}
 
-						else if (match('<')) {
-							addToken(IToken.Kind.LANGLE);
-						}
+					else if (match('<')) {
+						addToken(IToken.Kind.LANGLE);
+					}
 
-						else {
-							addToken(IToken.Kind.LT);
-						}
-						break;
+					else {
+						addToken(IToken.Kind.LT);
+					}
+					break;
 				case '>' :
-						if (match('=') ){
-							addToken(IToken.Kind.GE);
-						}
+					if (match('=') ){
+						addToken(IToken.Kind.GE);
+					}
 
 
-						else if (match('>')) {
-							addToken(IToken.Kind.RANGLE);
-						}
+					else if (match('>')) {
+						addToken(IToken.Kind.RANGLE);
+					}
 
-						else {
-							addToken(IToken.Kind.GT);
-						}
-						break;
+					else {
+						addToken(IToken.Kind.GT);
+					}
+					break;
 				// scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
 				case '"': stringToLexeme(); break;
 
