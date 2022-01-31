@@ -5,16 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static edu.ufl.cise.plc.IToken.Kind.ERROR;
-
 public class Lexer implements ILexer {
 
-    private Map<String, IToken.Kind> keywords;
+    public static Map<String, IToken.Kind> keywords;
 
 
 
-    static {
-        HashMap<String, IToken.Kind> keywords = new HashMap<>();
+     static {
+        keywords = new HashMap<>();
         keywords.put("if",    IToken.Kind.KW_IF);
         keywords.put("fi",    IToken.Kind.KW_FI);
         keywords.put("else",    IToken.Kind.KW_ELSE);
@@ -121,8 +119,8 @@ public class Lexer implements ILexer {
 
     @Override
     public char advance() {
-        return source.charAt(current++);
-
+        current++;
+        return source.charAt(current - 1);
         //next character in source string
     }
 
@@ -137,9 +135,15 @@ public class Lexer implements ILexer {
         // See if the identifier is a reserved word.
         String text = source.substring(start, current);
 
-        IToken.Kind type = keywords.get(text);
-        if (type == null) type = ERROR;
-        addToken(type);
+        IToken.Kind type;
+        if (keywords.get(text).equals(null)) {
+            type = IToken.Kind.ERROR;
+        } else {
+            type = keywords.get(text);
+
+        }
+
+        addToken(type, text);
 //< keyword-type
     }
 
@@ -229,6 +233,11 @@ public class Lexer implements ILexer {
             case '\n': line++; break;
 
             default:
+
+                if (Character.isAlphabetic(c)) {
+                    identifier();
+                }
+
                 if (Character.isDigit(c)) {
                     numberToLexeme();
                 } else {
@@ -275,9 +284,9 @@ public class Lexer implements ILexer {
         if (isFloat) {
             addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
 
+        } else {
+            addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
         }
-
-        addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
     }
 
 
