@@ -17,5 +17,4 @@ public class main {
             System.out.println(scan.tokens.get(i).type + ": " + scan.tokens.get(i).literal  + " ln " + scan.tokens.get(i).line  + " col " + scan.tokens.get(i).column  );
         }
     }
-
 }

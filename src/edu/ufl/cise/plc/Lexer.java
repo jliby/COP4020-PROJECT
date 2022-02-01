@@ -10,7 +10,6 @@ public class Lexer implements ILexer {
     public static Map<String, IToken.Kind> keywords;
     int next = 0;
     int currentToken = 0;
-    static boolean hadError = false;
 
 
     static {
@@ -310,16 +309,5 @@ public class Lexer implements ILexer {
     public void addToken(IToken.Kind type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new IToken.Token(type, text, literal, line, column));
-    }
-
-    static void error(int line, String message) {
-        report(line, "", message);
-    }
-
-    private static void report(int line, String where,
-                               String message) {
-        System.err.println(
-                "[line " + line + "] Error" + where + ": " + message);
-        hadError = true;
     }
 }
