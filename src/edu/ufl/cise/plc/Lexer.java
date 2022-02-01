@@ -324,5 +324,4 @@ public class Lexer implements ILexer {
         String text = source.substring(start, current);
         tokens.add(new IToken.Token(type, text, literal, line, column));
     }
-
 }
