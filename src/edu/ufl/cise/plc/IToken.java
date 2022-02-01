@@ -104,7 +104,7 @@ public interface IToken {
 
 		@Override
 		public SourceLocation getSourceLocation() {
-			return null;
+			return new SourceLocation(line, column);
 		}
 
 		@Override

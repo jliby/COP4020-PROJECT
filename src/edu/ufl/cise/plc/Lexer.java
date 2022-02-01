@@ -54,8 +54,8 @@ public class Lexer implements ILexer {
 
     int current = 0;
     int start = 0;
-    int line = 1;
-    int column = 1;
+    int line = 0;
+    int column = 0;
 
     String source = "";
     List<IToken.Token> tokens = new ArrayList<>();
