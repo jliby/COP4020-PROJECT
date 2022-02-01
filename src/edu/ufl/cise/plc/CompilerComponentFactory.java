@@ -4,8 +4,6 @@ package edu.ufl.cise.plc;
 //want as long as it implements the ILexer interface and you have provided an appropriate body for the getLexer method.
 
 
-import java.util.Scanner;
-
 public class CompilerComponentFactory {
 	
 	//This method will be invoked to get an instance of your lexer.  
@@ -13,7 +11,9 @@ public class CompilerComponentFactory {
 		//TODO:  modify this method so it returns an instance of your Lexer instead of throwing the exception.
 		//for example:  
 		      //return new Lexer(input);
-		return new Lexer(input);
+		Lexer test = new Lexer(input);
+		test.Scanner();
+		return test;
 //		throw new UnsupportedOperationException("CompilerComponentFactory must be modified to return an instance of your lexer");
 	}
 	

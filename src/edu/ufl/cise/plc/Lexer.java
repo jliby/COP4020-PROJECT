@@ -8,7 +8,8 @@ import java.util.Map;
 public class Lexer implements ILexer {
 
     public static Map<String, IToken.Kind> keywords;
-
+    int next = 0;
+    int currentToken = 0;
 
 
     static {
@@ -93,12 +94,10 @@ public class Lexer implements ILexer {
     }
     @Override
     public IToken next() throws LexicalException {
+        IToken token = tokens.get(currentToken);
+        currentToken += 1;
 
-        //		 if (current + 1 >= source.length()) return '\0';
-        //		 return source.charAt(current + 1);
-
-        // convert into token and return
-        return null;
+        return token;
     }
 
     @Override
@@ -107,8 +106,9 @@ public class Lexer implements ILexer {
         //		     return source.charAt(current);
 
         // convert into token and return
+        IToken token = tokens.get(currentToken++);
 
-        return null;
+        return token;
     }
     @Override
     public boolean match(char expected) {
@@ -288,7 +288,7 @@ public class Lexer implements ILexer {
 
 
     @Override
-    public List<IToken.Token> Scanner(String source) {
+    public List<IToken.Token> Scanner() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
             start = current;
