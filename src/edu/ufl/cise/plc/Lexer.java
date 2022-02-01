@@ -127,7 +127,11 @@ public class Lexer implements ILexer {
 
     @Override
     public void identifier() {
-        while (isAlphaNumeric(char_peek())) advance();
+        int tempColumn = column;
+        while (isAlphaNumeric(char_peek())){
+            advance();
+            tempColumn++;
+        }
 
 /* Scanning identifier < Scanning keyword-type
     addToken(IDENTIFIER);
@@ -143,9 +147,8 @@ public class Lexer implements ILexer {
         } else {
 
             addToken(IToken.Kind.IDENT, text);
-
-
         }
+        column = tempColumn;
 
 
 //< keyword-type
@@ -253,13 +256,19 @@ public class Lexer implements ILexer {
 
             default:
 
-                if (Character.isAlphabetic(c)) {
-                    identifier();
-                }
+//                if (Character.isAlphabetic(c)) {
+//                    identifier();
+//                }
 
                 if (Character.isDigit(c)) {
                     numberToLexeme();
-                } else {
+                }
+                if (Character.isAlphabetic(c)){
+                    identifier();
+                }
+
+                else {
+
 //                    try {
 //                        throw new LexicalException("unused");
 //                    } catch (LexicalException e) {
@@ -302,7 +311,11 @@ public class Lexer implements ILexer {
     @Override
     public void numberToLexeme() {
         boolean isFloat = false;
-        while (Character.isDigit(char_peek())) advance();
+        int tempColumn = column;
+        while (Character.isDigit(char_peek())){
+            advance();
+            tempColumn++;
+        }
 
         // Look for a fractional part.
         if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
@@ -320,6 +333,7 @@ public class Lexer implements ILexer {
             addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
 
         }
+        column = tempColumn;
     }
 
 
