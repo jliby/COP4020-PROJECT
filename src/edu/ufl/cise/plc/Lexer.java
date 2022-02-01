@@ -263,17 +263,19 @@ public class Lexer implements ILexer {
                 if (Character.isDigit(c)) {
                     numberToLexeme();
                 }
-                if (Character.isAlphabetic(c)){
+                else if (Character.isAlphabetic(c)){
                     identifier();
                 }
 
                 else {
 
 //                    try {
-//                        throw new LexicalException("unused");
+//                        throw new LexicalException("");
 //                    } catch (LexicalException e) {
 //                        e.printStackTrace();
 //                    }
+
+
                 }
                 break;
 //new
@@ -327,11 +329,8 @@ public class Lexer implements ILexer {
 
         if (isFloat) {
             addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
-
-
         } else {
             addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
-
         }
         column = tempColumn;
     }
