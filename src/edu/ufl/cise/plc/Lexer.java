@@ -180,7 +180,6 @@ public class Lexer implements ILexer {
             case ']' : addToken(IToken.Kind.LSQUARE); break;
             case '+' : addToken(IToken.Kind.PLUS); break;
             case '*' : addToken(IToken.Kind.TIMES); break;
-            case '-' : addToken(match('>') ? IToken.Kind.RARROW : IToken.Kind.MINUS); break;
             case '/' : addToken(IToken.Kind.DIV); break;
             case '^' : addToken(IToken.Kind.RETURN); break;
             case '%' : addToken(IToken.Kind.MOD); break;
@@ -189,48 +188,65 @@ public class Lexer implements ILexer {
             case '&' : addToken(IToken.Kind.AND); break;
             case '|' : addToken( IToken.Kind.OR); break;
             case '#' : commentSkip(); break;
-            case '!' : addToken(match('=') ? IToken.Kind.NOT_EQUALS : IToken.Kind.BANG); break;
+            case '-' :
+                if(match('>')) {
+                    addToken(IToken.Kind.RARROW);
+                    column++;
+                } else {
+                    addToken(IToken.Kind.MINUS);
+                }
+                break;
+
+            case '!' :
+                if(match('=')) {
+                    addToken(IToken.Kind.NOT_EQUALS);
+                    column++;
+                } else {
+                    addToken(IToken.Kind.BANG);
+                }
+                break;
+
             case '=' :
                 if(match('=')) {
                     addToken(IToken.Kind.EQUALS);
                     column++;
-
                 } else {
                     addToken(IToken.Kind.ASSIGN);
-
                 }
                 break;
 
             case '<' :
                 if (match('=') ){
                     addToken(IToken.Kind.LE);
+                    column++;
                 }
                 else if (match('-')) {
                     addToken(IToken.Kind.LARROW);
+                    column++;
                 }
-
                 else if (match('<')) {
                     addToken(IToken.Kind.LANGLE);
+                    column++;
                 }
-
                 else {
                     addToken(IToken.Kind.LT);
                 }
                 break;
+
             case '>' :
                 if (match('=') ){
                     addToken(IToken.Kind.GE);
+                    column++;
                 }
-
-
                 else if (match('>')) {
                     addToken(IToken.Kind.RANGLE);
+                    column++;
                 }
-
                 else {
                     addToken(IToken.Kind.GT);
                 }
                 break;
+
             // scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
             case '"': stringToLexeme(); break;
 
