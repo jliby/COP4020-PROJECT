@@ -284,7 +284,7 @@ public class Lexer implements ILexer {
             advance();
         }
 
-        }
+    }
     @Override
     public void stringToLexeme() {
         while (char_peek() != '"' && !isAtEnd()) {

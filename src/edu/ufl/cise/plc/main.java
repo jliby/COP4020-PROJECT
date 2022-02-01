@@ -4,10 +4,7 @@ package edu.ufl.cise.plc;
 public class main {
 
     public static void main(String[] args) {
-        String input = """
-				abc
-				@
-				""";
+        String input = "a123 456b";
         Lexer scan = new Lexer(input);
         scan.Scanner();
 
