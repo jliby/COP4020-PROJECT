@@ -142,7 +142,7 @@ public class LexerTests {
 		checkEOF(lexer.next());
 	}
 
-
+//problem with column
 	@Test
 	public void testEquals0() throws LexicalException {
 		String input = """

@@ -5,7 +5,8 @@ public class main {
 
     public static void main(String[] args) {
         String input = """
-				a123 456b
+				abc
+				@
 				""";
         Lexer scan = new Lexer(input);
         scan.Scanner();

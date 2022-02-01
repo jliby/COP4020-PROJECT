@@ -172,6 +172,7 @@ public class Lexer implements ILexer {
         switch (c) {
 
             // cases for single and double lexemes.
+            case' ': ; break;
             case'(': addToken(IToken.Kind.RPAREN); break;
             case ')': addToken(IToken.Kind.LPAREN); break;
             case '[' : addToken(IToken.Kind.RSQUARE); break;
@@ -233,6 +234,11 @@ public class Lexer implements ILexer {
                 if (Character.isDigit(c)) {
                     numberToLexeme();
                 } else {
+//                    try {
+//                        throw new LexicalException("unused");
+//                    } catch (LexicalException e) {
+//                        e.printStackTrace();
+//                    }
                 }
                 break;
 //new
