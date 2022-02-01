@@ -154,7 +154,7 @@ public class Lexer implements ILexer {
 
     private void line_column_tracker() {
         this.line+= 1;
-        this.column = 1;
+        this.column = 0;
     }
 
 
@@ -186,6 +186,7 @@ public class Lexer implements ILexer {
             case ';' : addToken(IToken.Kind.SEMI); break;
             case '&' : addToken(IToken.Kind.AND); break;
             case '|' : addToken( IToken.Kind.OR); break;
+            case '#' : commentSkip(); break;
             case '!' : addToken(match('=') ? IToken.Kind.NOT_EQUALS : IToken.Kind.BANG); break;
             case '=' : addToken(match('=') ? IToken.Kind.EQUALS : IToken.Kind.ASSIGN); break;
             case '<' :
@@ -232,13 +233,18 @@ public class Lexer implements ILexer {
                 if (Character.isDigit(c)) {
                     numberToLexeme();
                 } else {
-//						Lox.error(line, "Unexpected character.");
                 }
                 break;
 //new
         }
     }
 
+    public void commentSkip() {
+        while (char_peek() != '\n') {
+            advance();
+        }
+
+        }
     @Override
     public void stringToLexeme() {
         while (char_peek() != '"' && !isAtEnd()) {
@@ -289,14 +295,16 @@ public class Lexer implements ILexer {
 
     @Override
     public List<IToken.Token> Scanner() {
+
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
             start = current;
             scanToken();
-            column += 1;
         }
 
         tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line, column));
+        column += 1;
+
         return tokens;
     }
 
