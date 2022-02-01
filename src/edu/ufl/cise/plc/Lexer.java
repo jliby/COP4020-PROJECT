@@ -114,7 +114,6 @@ public class Lexer implements ILexer {
     public boolean match(char expected) {
         if (isAtEnd()) return false;
         if (source.charAt(current) != expected) return false;
-
         current++;
         return true;
     }
@@ -310,7 +309,6 @@ public class Lexer implements ILexer {
             // Consume the "."
             isFloat = true;
             advance();
-
             while (Character.isDigit(char_peek())) advance();
         }
 
