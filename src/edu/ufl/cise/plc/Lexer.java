@@ -55,7 +55,7 @@ public class Lexer implements ILexer {
     int current = 0;
     int start = 0;
     int line = 0;
-    int column = 0;
+    int column = -1;
 
     String source = "";
     List<IToken.Token> tokens = new ArrayList<>();
@@ -154,7 +154,7 @@ public class Lexer implements ILexer {
 
     private void line_column_tracker() {
         this.line+= 1;
-        this.column = 0;
+        this.column = -1;
     }
 
 
@@ -169,10 +169,11 @@ public class Lexer implements ILexer {
     @Override
     public void scanToken() {
         char c = advance();
+        column++;
         switch (c) {
 
             // cases for single and double lexemes.
-            case' ': ; break;
+            case' ':  ; break;
             case'(': addToken(IToken.Kind.RPAREN); break;
             case ')': addToken(IToken.Kind.LPAREN); break;
             case '[' : addToken(IToken.Kind.RSQUARE); break;
@@ -189,7 +190,17 @@ public class Lexer implements ILexer {
             case '|' : addToken( IToken.Kind.OR); break;
             case '#' : commentSkip(); break;
             case '!' : addToken(match('=') ? IToken.Kind.NOT_EQUALS : IToken.Kind.BANG); break;
-            case '=' : addToken(match('=') ? IToken.Kind.EQUALS : IToken.Kind.ASSIGN); break;
+            case '=' :
+                if(match('=')) {
+                    addToken(IToken.Kind.EQUALS);
+                    column++;
+
+                } else {
+                    addToken(IToken.Kind.ASSIGN);
+
+                }
+                break;
+
             case '<' :
                 if (match('=') ){
                     addToken(IToken.Kind.LE);
@@ -244,7 +255,6 @@ public class Lexer implements ILexer {
 //new
         }
     }
-
     public void commentSkip() {
         while (char_peek() != '\n') {
             advance();
@@ -307,7 +317,6 @@ public class Lexer implements ILexer {
             start = current;
             scanToken();
         }
-
         tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line, column));
         column += 1;
 
