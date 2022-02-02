@@ -149,7 +149,7 @@ public interface IToken {
 					} else if (rawStr.charAt(i + 1) == 'n') {
 						returnStr += '\n';
 					} else if (rawStr.charAt(i + 1) == 'f') {
-						returnStr += '\t';
+						returnStr += '\f';
 					} else if (rawStr.charAt(i + 1) == 'r') {
 						returnStr += '\r';
 					} else if (rawStr.charAt(i + 1) == '"') {

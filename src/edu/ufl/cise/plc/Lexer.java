@@ -275,8 +275,7 @@ public class Lexer implements ILexer {
         }
         // The closing ".
         advance();
-        // Trim the surrounding quotes.
-        String value = source.substring(start + 1, current - 1);
+        String value = source.substring(start, current);
         addToken(IToken.Kind.STRING_LIT, value);
     }
 
