@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.lang.Math;
 
 public class Lexer implements ILexer {
 
@@ -296,13 +295,13 @@ public class Lexer implements ILexer {
         }
         if (isFloat) {
             try{
-                Double.parseDouble(source.substring(start, current));
+                Float.parseFloat(source.substring(start, current));
             }
             catch (Exception e){
                 addToken(IToken.Kind.ERROR);
                 return null;
             }
-            addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
+            addToken(IToken.Kind.FLOAT_LIT, Float.parseFloat(source.substring(start, current)));
         }
         else {
             try{
