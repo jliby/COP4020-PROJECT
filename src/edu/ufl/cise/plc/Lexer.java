@@ -11,7 +11,6 @@ public class Lexer implements ILexer {
     int next = 0;
     int currentToken = 0;
 
-
     static {
         keywords = new HashMap<>();
         keywords.put("if",    IToken.Kind.KW_IF);
@@ -75,18 +74,18 @@ public class Lexer implements ILexer {
     public boolean isAlphaNumeric(char c) {
         return isAlpha(c) || isDigit(c);
     }
-    //< is-alpha
-//> is-digit
+
     @Override
     public boolean isDigit(char c) {
         return c >= '0' && c <= '9';
-    } // [is-digit]
+    }
 
     @Override
     public char char_peek() {
         if (isAtEnd()) return '\0';
         return source.charAt(current);
     }
+
     @Override
     public char char_peekNext() {
         if (current + 1 >= source.length()) return '\0';
@@ -96,24 +95,19 @@ public class Lexer implements ILexer {
     public IToken next() throws LexicalException {
         IToken token = tokens.get(currentToken);
         currentToken += 1;
-
         if (token.getKind() == IToken.Kind.ERROR) {
             throw new LexicalException("test");
         }
-
         return token;
     }
 
     @Override
     public IToken peek() throws LexicalException {
-        //		 if (isAtEnd()) return '\0';
-        //		     return source.charAt(current);
-
         // convert into token and return
         IToken token = tokens.get(currentToken++);
-
         return token;
     }
+
     @Override
     public boolean match(char expected) {
         if (isAtEnd()) return false;
@@ -125,8 +119,8 @@ public class Lexer implements ILexer {
     @Override
     public char advance() {
         current++;
-        return source.charAt(current - 1);
         //next character in source string
+        return source.charAt(current - 1);
     }
 
     @Override
@@ -136,26 +130,16 @@ public class Lexer implements ILexer {
             advance();
             tempColumn++;
         }
-
-/* Scanning identifier < Scanning keyword-type
-    addToken(IDENTIFIER);
-*/
-//> keyword-type
         // See if the identifier is a reserved word.
         String text = source.substring(start, current);
-
         IToken.Kind type;
         if (keywords.containsKey(text)) {
             type = keywords.get(text);
             addToken(type, text);
         } else {
-
             addToken(IToken.Kind.IDENT, text);
         }
         column = tempColumn;
-
-
-//< keyword-type
     }
 
     private void line_column_tracker() {
@@ -163,13 +147,10 @@ public class Lexer implements ILexer {
         this.column = -1;
     }
 
-
-
     @Override
     public boolean isAtEnd() {
-        return current >= source.length();
-
         // check's if at end of lexeme
+        return current >= source.length();
     }
 
     @Override
@@ -177,7 +158,6 @@ public class Lexer implements ILexer {
         char c = advance();
         column++;
         switch (c) {
-
             // cases for single and double lexemes.
             case' ':  ; break;
             case'(': addToken(IToken.Kind.RPAREN); break;
@@ -255,14 +235,8 @@ public class Lexer implements ILexer {
 
             // scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
             case '"': stringToLexeme(); break;
-
             case '\n': line_column_tracker(); break;
-
             default:
-
-//                if (Character.isAlphabetic(c)) {
-//                    identifier();
-//                }
 
                 if (Character.isDigit(c)) {
                     numberToLexeme();
@@ -272,22 +246,18 @@ public class Lexer implements ILexer {
                 }
 
                 else {
-
                     addToken(IToken.Kind.ERROR);
-
-
-
                 }
                 break;
-//new
         }
     }
+
     public void commentSkip() {
         while (char_peek() != '\n') {
             advance();
         }
-
     }
+
     @Override
     public void stringToLexeme() {
         while (char_peek() != '"' && !isAtEnd()) {
@@ -297,20 +267,17 @@ public class Lexer implements ILexer {
             }
             advance();
         }
-
         // Unterminated string.
         if (isAtEnd()) {
             return;
         }
-
         // The closing ".
         advance();
-
         // Trim the surrounding quotes.
         String value = source.substring(start + 1, current - 1);
         addToken(IToken.Kind.STRING_LIT, value);
-
     }
+
     @Override
     public LexicalException numberToLexeme() {
         boolean isFloat = false;
@@ -319,7 +286,6 @@ public class Lexer implements ILexer {
             advance();
             tempColumn++;
         }
-
         // Look for a fractional part.
         if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
             // Consume the "."
@@ -327,7 +293,6 @@ public class Lexer implements ILexer {
             advance();
             while (Character.isDigit(char_peek())) advance();
         }
-
         if (isFloat) {
             addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
         } else {
@@ -344,10 +309,8 @@ public class Lexer implements ILexer {
         return null;
     }
 
-
     @Override
     public List<IToken.Token> Scanner() {
-
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
             start = current;
