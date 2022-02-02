@@ -173,6 +173,9 @@ public class Lexer implements ILexer {
             case ';' : addToken(IToken.Kind.SEMI); break;
             case '&' : addToken(IToken.Kind.AND); break;
             case '|' : addToken( IToken.Kind.OR); break;
+            /*Currently # reads a comment until the end of line
+            * we need to implement so it can also read until \n or \r\n
+            * */
             case '#' : commentSkip(); break;
             case '-' :
                 if(match('>')) {
