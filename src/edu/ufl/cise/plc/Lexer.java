@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.lang.Math;
 
 public class Lexer implements ILexer {
 
@@ -294,8 +295,16 @@ public class Lexer implements ILexer {
             while (Character.isDigit(char_peek())) advance();
         }
         if (isFloat) {
+            try{
+                Double.parseDouble(source.substring(start, current));
+            }
+            catch (Exception e){
+                addToken(IToken.Kind.ERROR);
+                return null;
+            }
             addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
-        } else {
+        }
+        else {
             try{
                 Integer.parseInt(source.substring(start, current));
             }

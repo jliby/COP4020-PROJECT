@@ -6,7 +6,7 @@ public class main {
     public static void main(String[] args) throws LexicalException {
         String input = """
 				42
-				99999999999999999999999999999999999999999999999999999999999999999999999
+				99.99999999999999999999999
 				""";
         Lexer scan = new Lexer(input);
         scan.Scanner();
