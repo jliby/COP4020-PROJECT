@@ -331,13 +331,12 @@ public class Lexer implements ILexer {
         if (isFloat) {
             addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
         } else {
-
-            try {
-                Integer.getInteger(source.substring(start, current));
+            try{
+                Integer.parseInt(source.substring(start, current));
             }
-            catch (Exception e) {
-                addToken(IToken.Kind.ERROR, Integer.parseInt(source.substring(start, current)));
-
+            catch (Exception e){
+                addToken(IToken.Kind.ERROR);
+                return null;
             }
             addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
         }
