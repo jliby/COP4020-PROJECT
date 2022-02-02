@@ -67,7 +67,7 @@ public class Lexer implements ILexer {
     public boolean isAlpha(char c) {
         return (c >= 'a' && c <= 'z') ||
                 (c >= 'A' && c <= 'Z') ||
-                c == '_';
+                c == '_' || c == '$';
     }
 
     @Override
@@ -241,7 +241,7 @@ public class Lexer implements ILexer {
                 if (Character.isDigit(c)) {
                     numberToLexeme();
                 }
-                else if (Character.isAlphabetic(c)){
+                else if (Character.isAlphabetic(c) || c == '_' || c == '$'){
                     identifier();
                 }
 
@@ -326,8 +326,8 @@ public class Lexer implements ILexer {
             start = current;
             scanToken();
         }
-        tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line, column, false));
         column += 1;
+        tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line, column, false));
 
         return tokens;
     }

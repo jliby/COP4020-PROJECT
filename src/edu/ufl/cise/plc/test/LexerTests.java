@@ -187,6 +187,8 @@ public class LexerTests {
 		});
 	}
 
+	/*=== CUSTOM TEST CASES ===*/
+
 	String getASCII(String s) {
 		int[] ascii = new int[s.length()];
 		for (int i = 0; i != s.length(); i++) {
@@ -230,5 +232,56 @@ public class LexerTests {
 		String expectedText = "\" ...  \\\"  \\\'  \\\\  \""; //almost the same as input, but white space is omitted
 		show("expectedTextChars="+getASCII(expectedText));
 		assertEquals(expectedText,text);
+	}
+
+	@Test
+	void testError0_Custom() throws LexicalException {
+		String input = """
+			.123
+			""";
+		show(input);
+		ILexer lexer = getLexer(input);
+		//this is expected to throw an exception since @ is not a legal
+		//character unless it is part of a string or comment
+		assertThrows(LexicalException.class, () -> {
+			@SuppressWarnings("unused")
+			IToken token = lexer.next();
+		});
+	}
+
+	@Test
+	public void testIdentStr0_Custom() throws LexicalException {
+		String input = """
+			$$__abc__$$
+			__$$abc$$__
+			""";
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkIdent(lexer.next(), "$$__abc__$$", 0,0);
+		checkIdent(lexer.next(), "__$$abc$$__", 1,0);
+		checkEOF(lexer.next());
+	}
+
+	@Test
+	public void testIdentInt0_Custom() throws LexicalException {
+		String input = "0";
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkInt(lexer.next(), 0, 0,0);
+		checkEOF(lexer.next());
+	}
+
+	@Test
+	void testError1_Custom() throws LexicalException {
+		String input = """
+			1.23.45
+			""";
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkInt(lexer.next(), 1, 0,0);
+		assertThrows(LexicalException.class, () -> {
+			@SuppressWarnings("unused")
+			IToken token = lexer.next();
+		});
 	}
 }
