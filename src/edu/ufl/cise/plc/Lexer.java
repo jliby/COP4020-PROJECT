@@ -273,11 +273,8 @@ public class Lexer implements ILexer {
 
                 else {
 
-//                    try {
-//                        throw new LexicalException("");
-//                    } catch (LexicalException e) {
-//                        e.printStackTrace();
-//                    }
+                    addToken(IToken.Kind.ERROR);
+
 
 
                 }
