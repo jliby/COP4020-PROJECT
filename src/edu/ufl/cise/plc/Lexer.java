@@ -267,6 +267,9 @@ public class Lexer implements ILexer {
                 line++;
                 column = 0;
             }
+            if(char_peek() == '\\' && char_peekNext() == '"'){
+                advance();
+            }
             advance();
         }
         // Unterminated string.
