@@ -3,8 +3,11 @@ package edu.ufl.cise.plc;
 
 public class main {
 
-    public static void main(String[] args) {
-        String input = "a123 456b";
+    public static void main(String[] args) throws LexicalException {
+        String input = """
+				42
+				99999999999999999999999999999999999999999999999999999999999999999999999
+				""";
         Lexer scan = new Lexer(input);
         scan.Scanner();
 

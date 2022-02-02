@@ -97,6 +97,10 @@ public class Lexer implements ILexer {
         IToken token = tokens.get(currentToken);
         currentToken += 1;
 
+        if (token.getKind() == IToken.Kind.ERROR) {
+            throw new LexicalException("test");
+        }
+
         return token;
     }
 
@@ -311,7 +315,7 @@ public class Lexer implements ILexer {
 
     }
     @Override
-    public void numberToLexeme() {
+    public LexicalException numberToLexeme() {
         boolean isFloat = false;
         int tempColumn = column;
         while (Character.isDigit(char_peek())){
@@ -330,9 +334,18 @@ public class Lexer implements ILexer {
         if (isFloat) {
             addToken(IToken.Kind.FLOAT_LIT, Double.parseDouble(source.substring(start, current)));
         } else {
+
+            try {
+                Integer.getInteger(source.substring(start, current));
+            }
+            catch (Exception e) {
+                addToken(IToken.Kind.ERROR, Integer.parseInt(source.substring(start, current)));
+
+            }
             addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
         }
         column = tempColumn;
+        return null;
     }
 
 
@@ -344,7 +357,7 @@ public class Lexer implements ILexer {
             start = current;
             scanToken();
         }
-        tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line, column));
+        tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line, column, false));
         column += 1;
 
         return tokens;
@@ -358,6 +371,6 @@ public class Lexer implements ILexer {
     @Override
     public void addToken(IToken.Kind type, Object literal) {
         String text = source.substring(start, current);
-        tokens.add(new IToken.Token(type, text, literal, line, column));
+        tokens.add(new IToken.Token(type, text, literal, line, column, false));
     }
 }

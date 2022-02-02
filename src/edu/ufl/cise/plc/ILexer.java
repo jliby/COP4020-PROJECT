@@ -28,13 +28,13 @@ public interface ILexer {
 
 	void addToken(IToken.Kind type, Object literal);
 
-	void numberToLexeme();
+	LexicalException numberToLexeme() throws LexicalException;
 
 	void identifier();
 
 	boolean isAtEnd();
 
-	void scanToken();
+	void scanToken() throws LexicalException;
 
 	boolean isAlpha(char c);
 
@@ -45,7 +45,7 @@ public interface ILexer {
 	void stringToLexeme();
 
 
-	List<IToken.Token> Scanner();
+	List<IToken.Token> Scanner() throws LexicalException;
 
 
 }

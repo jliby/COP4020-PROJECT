@@ -64,6 +64,8 @@ public interface IToken {
 	//returns the int value represented by the characters of this token if kind is INT_LIT
 	public int getIntValue();
 
+	public boolean getIsException();
+
 	//returns the float value represented by the characters of this token if kind is FLOAT_LIT
 	public float getFloatValue();
 
@@ -83,13 +85,19 @@ public interface IToken {
 		int column;
 		String lexeme;
 
-
-		public Token(Kind type, String lexeme, Object literal, int line, int column) {
+		boolean isException;
+		public Token(Kind type, String lexeme, Object literal, int line, int column, boolean isException) {
 			this.type = type;
 			this.lexeme = lexeme;
 			this.literal = literal;
 			this.line = line;
 			this.column = column;
+			this.isException =  isException;
+		}
+
+		@Override
+		public boolean getIsException() {
+			return isException;
 		}
 
 		@Override
