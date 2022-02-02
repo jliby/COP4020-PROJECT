@@ -63,6 +63,19 @@ public class LexerTests {
 		assertEquals(new IToken.SourceLocation(expectedLine,expectedColumn), t.getSourceLocation());
 	}
 
+	/*=== NEW CHECK FLOAT FUNCTIONS ===*/
+	//check that this token is an FLOAT_LIT with expected int value
+	void checkFloat(IToken t, float expectedValue) {
+		assertEquals(Kind.FLOAT_LIT, t.getKind());
+		assertEquals(expectedValue, t.getFloatValue());
+	}
+
+	//check that this token  is an FLOAT_LIT with expected int value and position
+	void checkFloat(IToken t, float expectedValue, int expectedLine, int expectedColumn) {
+		checkFloat(t,expectedValue);
+		assertEquals(new IToken.SourceLocation(expectedLine,expectedColumn), t.getSourceLocation());
+	}
+
 	//check that this token is the EOF token
 	void checkEOF(IToken t) {
 		checkToken(t, Kind.EOF);
@@ -274,14 +287,25 @@ public class LexerTests {
 	@Test
 	void testError1_Custom() throws LexicalException {
 		String input = """
-			1.23.45
+			1.2.45
 			""";
 		show(input);
 		ILexer lexer = getLexer(input);
-		checkInt(lexer.next(), 1, 0,0);
+		checkFloat(lexer.next(), (float) 1.2, 0,0);
 		assertThrows(LexicalException.class, () -> {
 			@SuppressWarnings("unused")
 			IToken token = lexer.next();
 		});
+	}
+
+	@Test
+	public void testIdentStr1_Custom() throws LexicalException {
+		String input = """
+			abc_123
+			""";
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkIdent(lexer.next(), "abc_123", 0,0);
+		checkEOF(lexer.next());
 	}
 }
