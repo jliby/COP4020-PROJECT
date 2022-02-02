@@ -260,6 +260,8 @@ public class Lexer implements ILexer {
 
     @Override
     public void stringToLexeme() {
+        boolean iterate = true;
+
         while (char_peek() != '"' && !isAtEnd()) {
             if (char_peek() == '\n') {
                 line++;
