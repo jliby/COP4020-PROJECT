@@ -163,6 +163,14 @@ public class Lexer implements ILexer {
         column++;
         switch (c) {
             // cases for single and double lexemes.
+
+            case '0' :
+                if (char_peek() == '0'){
+                    addToken(IToken.Kind.INT_LIT, '0');
+                } else {
+                    numberToLexeme();
+                }
+                break;
             case' ':  ; break;
             case'(': addToken(IToken.Kind.LPAREN); break;
             case ')': addToken(IToken.Kind.RPAREN); break;
@@ -178,6 +186,7 @@ public class Lexer implements ILexer {
             case '&' : addToken(IToken.Kind.AND); break;
             case '|' : addToken( IToken.Kind.OR); break;
             case '#' : commentSkip(); break;
+
 
             case '-' :
                 if(match('>')) {
@@ -301,52 +310,6 @@ public class Lexer implements ILexer {
     public LexicalException numberToLexeme() {
         boolean isFloat = false;
         int tempColumn = column;
-        int count = 0;
-        while (Character.isDigit(char_peek())){
-            advance();
-            tempColumn++;
-        }
-        // Look for a fractional part.
-        if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
-            // Consume the "."
-            if (count > 1) {
-
-            } else {
-                count++;
-                isFloat = true;
-                advance();
-                while (Character.isDigit(char_peek())) advance();
-            }
-        }
-        if (count <= 1) {
-            if (isFloat) {
-                try {
-                    Float.parseFloat(source.substring(start, current));
-                } catch (Exception e) {
-                    addToken(IToken.Kind.ERROR);
-                    return null;
-                }
-                addToken(IToken.Kind.FLOAT_LIT, Float.parseFloat(source.substring(start, current)));
-            } else {
-                try {
-                    Integer.parseInt(source.substring(start, current));
-                } catch (Exception e) {
-                    addToken(IToken.Kind.ERROR);
-                    return null;
-                }
-                addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
-            }
-
-            column = tempColumn;
-        }
-            return null;
-
-    }
-
-    public LexicalException numberToLexemePoint() {
-        boolean isFloat = false;
-        int tempColumn = column;
-        advance();
         while (Character.isDigit(char_peek())){
             advance();
             tempColumn++;
@@ -381,6 +344,7 @@ public class Lexer implements ILexer {
         column = tempColumn;
         return null;
     }
+
 
 
     @Override

@@ -248,18 +248,18 @@ public class LexerTests {
 		show("expectedTextChars="+getASCII(expectedText));
 		assertEquals(expectedText,text);
 	}
-
 	@Test
 	void testIntFloatError() throws LexicalException {
 		String input = """
 			0.32
-			0.15
+			00.15
 			10.030.32
 			""";
 		show(input);
 		ILexer lexer = getLexer(input);
 		checkFloat(lexer.next(), (float) 0.32,	0, 0);
-		checkFloat(lexer.next(), (float) 0.15,	1, 0);
+		checkInt(lexer.next(), 0, 			1, 0);
+		checkFloat(lexer.next(), (float) 0.15,	1, 1);
 		checkFloat(lexer.next(), (float) 10.030,	2, 0);
 		assertThrows(LexicalException.class, () -> {
 			@SuppressWarnings("unused")
