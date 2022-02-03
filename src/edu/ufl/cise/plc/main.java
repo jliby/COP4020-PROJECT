@@ -4,8 +4,12 @@ package edu.ufl.cise.plc;
 public class main {
 
     public static void main(String[] args) throws LexicalException {
-        String input = "   \" ...  \\\"  \\\'  \\\\  \"";
-        Lexer scan = new Lexer(input);
+		String input = """
+			0.32
+			00.15
+			10.030.32
+			""";
+		Lexer scan = new Lexer(input);
         scan.Scanner();
         System.out.println(input);
         for (int i = 0; i < scan.tokens.size(); i++) {

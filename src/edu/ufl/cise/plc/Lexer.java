@@ -31,6 +31,10 @@ public class Lexer implements ILexer {
         keywords.put("MAGENTA",    IToken.Kind.COLOR_CONST);
         keywords.put("ORANGE",    IToken.Kind.COLOR_CONST);
         keywords.put("PINK",    IToken.Kind.COLOR_CONST);
+        keywords.put("RED",    IToken.Kind.COLOR_CONST);
+        keywords.put("WHITE",    IToken.Kind.COLOR_CONST);
+        keywords.put("YELLOW",    IToken.Kind.COLOR_CONST);
+
 
         keywords.put("getRed", IToken.Kind.COLOR_OP);
         keywords.put("getGreen", IToken.Kind.COLOR_OP);
@@ -160,10 +164,10 @@ public class Lexer implements ILexer {
         switch (c) {
             // cases for single and double lexemes.
             case' ':  ; break;
-            case'(': addToken(IToken.Kind.RPAREN); break;
-            case ')': addToken(IToken.Kind.LPAREN); break;
-            case '[' : addToken(IToken.Kind.RSQUARE); break;
-            case ']' : addToken(IToken.Kind.LSQUARE); break;
+            case'(': addToken(IToken.Kind.LPAREN); break;
+            case ')': addToken(IToken.Kind.RPAREN); break;
+            case '[' : addToken(IToken.Kind.LSQUARE); break;
+            case ']' : addToken(IToken.Kind.RSQUARE); break;
             case '+' : addToken(IToken.Kind.PLUS); break;
             case '*' : addToken(IToken.Kind.TIMES); break;
             case '/' : addToken(IToken.Kind.DIV); break;
@@ -174,6 +178,7 @@ public class Lexer implements ILexer {
             case '&' : addToken(IToken.Kind.AND); break;
             case '|' : addToken( IToken.Kind.OR); break;
             case '#' : commentSkip(); break;
+
             case '-' :
                 if(match('>')) {
                     addToken(IToken.Kind.RARROW);
@@ -263,17 +268,25 @@ public class Lexer implements ILexer {
         boolean iterate = true;
 
         while (char_peek() != '"' && !isAtEnd()) {
+
+            if(char_peek() == '\\' && char_peekNext() == '"'){
+                advance();
+
+            }
+
+
+            advance();
+
+
             if (char_peek() == '\n') {
                 line++;
                 column = 0;
             }
-            if(char_peek() == '\\' && char_peekNext() == '"'){
-                advance();
-            }
-            advance();
         }
         // Unterminated string.
         if (isAtEnd()) {
+            addToken(IToken.Kind.ERROR);
+
             return;
         }
         // The closing ".
@@ -282,10 +295,58 @@ public class Lexer implements ILexer {
         addToken(IToken.Kind.STRING_LIT, value);
     }
 
+
+
     @Override
     public LexicalException numberToLexeme() {
         boolean isFloat = false;
         int tempColumn = column;
+        int count = 0;
+        while (Character.isDigit(char_peek())){
+            advance();
+            tempColumn++;
+        }
+        // Look for a fractional part.
+        if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
+            // Consume the "."
+            if (count > 1) {
+
+            } else {
+                count++;
+                isFloat = true;
+                advance();
+                while (Character.isDigit(char_peek())) advance();
+            }
+        }
+        if (count <= 1) {
+            if (isFloat) {
+                try {
+                    Float.parseFloat(source.substring(start, current));
+                } catch (Exception e) {
+                    addToken(IToken.Kind.ERROR);
+                    return null;
+                }
+                addToken(IToken.Kind.FLOAT_LIT, Float.parseFloat(source.substring(start, current)));
+            } else {
+                try {
+                    Integer.parseInt(source.substring(start, current));
+                } catch (Exception e) {
+                    addToken(IToken.Kind.ERROR);
+                    return null;
+                }
+                addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
+            }
+
+            column = tempColumn;
+        }
+            return null;
+
+    }
+
+    public LexicalException numberToLexemePoint() {
+        boolean isFloat = false;
+        int tempColumn = column;
+        advance();
         while (Character.isDigit(char_peek())){
             advance();
             tempColumn++;
@@ -320,6 +381,7 @@ public class Lexer implements ILexer {
         column = tempColumn;
         return null;
     }
+
 
     @Override
     public List<IToken.Token> Scanner() {
