@@ -108,7 +108,8 @@ public class Lexer implements ILexer {
     @Override
     public IToken peek() throws LexicalException {
         // convert into token and return
-        IToken token = tokens.get(currentToken++);
+        //Changed arg from currentToken++ to currentToken
+        IToken token = tokens.get(currentToken);
         return token;
     }
 
@@ -167,7 +168,8 @@ public class Lexer implements ILexer {
             case '0' :
                 if (char_peek() == '0'){
                     addToken(IToken.Kind.INT_LIT, '0');
-                } else {
+                }
+                else {
                     numberToLexeme();
                 }
                 break;
@@ -186,7 +188,7 @@ public class Lexer implements ILexer {
             case '&' : addToken(IToken.Kind.AND); break;
             case '|' : addToken( IToken.Kind.OR); break;
             case '#' : commentSkip(); break;
-            
+
             case '-' :
                 if(match('>')) {
                     addToken(IToken.Kind.RARROW);
