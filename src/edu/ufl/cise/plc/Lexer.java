@@ -186,8 +186,7 @@ public class Lexer implements ILexer {
             case '&' : addToken(IToken.Kind.AND); break;
             case '|' : addToken( IToken.Kind.OR); break;
             case '#' : commentSkip(); break;
-
-
+            
             case '-' :
                 if(match('>')) {
                     addToken(IToken.Kind.RARROW);
@@ -251,14 +250,12 @@ public class Lexer implements ILexer {
             case '"': stringToLexeme(); break;
             case '\n': line_column_tracker(); break;
             default:
-
                 if (Character.isDigit(c)) {
                     numberToLexeme();
                 }
                 else if (Character.isAlphabetic(c) || c == '_' || c == '$'){
                     identifier();
                 }
-
                 else {
                     addToken(IToken.Kind.ERROR);
                 }
@@ -285,17 +282,12 @@ public class Lexer implements ILexer {
                 advance();
                 tempColumn++;
             }
-
-
             advance();
             tempColumn++;
-
-
         }
         // Unterminated string.
         if (isAtEnd()) {
             addToken(IToken.Kind.ERROR);
-
             return;
         }
         // The closing ".
@@ -305,8 +297,6 @@ public class Lexer implements ILexer {
         addToken(IToken.Kind.STRING_LIT, value);
         column = tempColumn;
     }
-
-
 
     @Override
     public LexicalException numberToLexeme() {
@@ -350,8 +340,6 @@ public class Lexer implements ILexer {
         column = tempColumn;
         return null;
     }
-
-
 
     @Override
     public List<IToken.Token> Scanner() {
