@@ -275,22 +275,22 @@ public class Lexer implements ILexer {
     @Override
     public void stringToLexeme() {
         boolean iterate = true;
-
+        int tempColumn = column;
         while (char_peek() != '"' && !isAtEnd()) {
-
-            if(char_peek() == '\\' && char_peekNext() == '"'){
-                advance();
-
-            }
-
-
-            advance();
-
-
             if (char_peek() == '\n') {
                 line++;
                 column = 0;
             }
+            else if(char_peek() == '\\' && char_peekNext() == '"'){
+                advance();
+                tempColumn++;
+            }
+
+
+            advance();
+            tempColumn++;
+
+
         }
         // Unterminated string.
         if (isAtEnd()) {
@@ -300,8 +300,10 @@ public class Lexer implements ILexer {
         }
         // The closing ".
         advance();
+        tempColumn++;
         String value = source.substring(start, current);
         addToken(IToken.Kind.STRING_LIT, value);
+        column = tempColumn;
     }
 
 
@@ -319,7 +321,11 @@ public class Lexer implements ILexer {
             // Consume the "."
             isFloat = true;
             advance();
-            while (Character.isDigit(char_peek())) advance();
+            tempColumn++;
+            while (Character.isDigit(char_peek())){
+                advance();
+                tempColumn++;
+            }
         }
         if (isFloat) {
             try{
