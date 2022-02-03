@@ -35,6 +35,7 @@ public class Lexer implements ILexer {
         keywords.put("WHITE",    IToken.Kind.COLOR_CONST);
         keywords.put("YELLOW",    IToken.Kind.COLOR_CONST);
 
+
         keywords.put("getRed", IToken.Kind.COLOR_OP);
         keywords.put("getGreen", IToken.Kind.COLOR_OP);
         keywords.put("getBlue", IToken.Kind.COLOR_OP);
@@ -93,11 +94,6 @@ public class Lexer implements ILexer {
     public char char_peekNext() {
         if (current + 1 >= source.length()) return '\0';
         return source.charAt(current + 1);
-    }
-
-    public char char_peekBefore() {
-        if (current - 1 < 0) return '\0';
-        return source.charAt(current - 1);
     }
     @Override
     public IToken next() throws LexicalException {
@@ -181,10 +177,8 @@ public class Lexer implements ILexer {
             case ';' : addToken(IToken.Kind.SEMI); break;
             case '&' : addToken(IToken.Kind.AND); break;
             case '|' : addToken( IToken.Kind.OR); break;
-            /*Currently # reads a comment until the end of line
-            * we need to implement so it can also read until \n or \r\n
-            * */
             case '#' : commentSkip(); break;
+
             case '-' :
                 if(match('>')) {
                     addToken(IToken.Kind.RARROW);
@@ -250,7 +244,6 @@ public class Lexer implements ILexer {
             default:
 
                 if (Character.isDigit(c)) {
-                    /* current char c is not the same as char_peek() */
                     numberToLexeme();
                 }
                 else if (Character.isAlphabetic(c) || c == '_' || c == '$'){
@@ -273,50 +266,97 @@ public class Lexer implements ILexer {
     @Override
     public void stringToLexeme() {
         boolean iterate = true;
-        int tempColumn = column;
+
         while (char_peek() != '"' && !isAtEnd()) {
+
+            if(char_peek() == '\\' && char_peekNext() == '"'){
+                advance();
+
+            }
+
+
+            advance();
+
+
             if (char_peek() == '\n') {
                 line++;
                 column = 0;
             }
-            else if(char_peek() == '\\' && char_peekNext() == '"'){
-                advance();
-                tempColumn++;
-            }
-            advance();
-            tempColumn++;
         }
         // Unterminated string.
         if (isAtEnd()) {
+            addToken(IToken.Kind.ERROR);
+
             return;
         }
         // The closing ".
         advance();
-        tempColumn++;
         String value = source.substring(start, current);
         addToken(IToken.Kind.STRING_LIT, value);
-        column = tempColumn;
     }
+
+
 
     @Override
     public LexicalException numberToLexeme() {
         boolean isFloat = false;
         int tempColumn = column;
+        int count = 0;
         while (Character.isDigit(char_peek())){
             advance();
             tempColumn++;
         }
         // Look for a fractional part.
         if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
+            // Consume the "."
+            if (count > 1) {
 
+            } else {
+                count++;
+                isFloat = true;
+                advance();
+                while (Character.isDigit(char_peek())) advance();
+            }
+        }
+        if (count <= 1) {
+            if (isFloat) {
+                try {
+                    Float.parseFloat(source.substring(start, current));
+                } catch (Exception e) {
+                    addToken(IToken.Kind.ERROR);
+                    return null;
+                }
+                addToken(IToken.Kind.FLOAT_LIT, Float.parseFloat(source.substring(start, current)));
+            } else {
+                try {
+                    Integer.parseInt(source.substring(start, current));
+                } catch (Exception e) {
+                    addToken(IToken.Kind.ERROR);
+                    return null;
+                }
+                addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
+            }
+
+            column = tempColumn;
+        }
+            return null;
+
+    }
+
+    public LexicalException numberToLexemePoint() {
+        boolean isFloat = false;
+        int tempColumn = column;
+        advance();
+        while (Character.isDigit(char_peek())){
+            advance();
+            tempColumn++;
+        }
+        // Look for a fractional part.
+        if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
             // Consume the "."
             isFloat = true;
             advance();
-            tempColumn++;
-            while (Character.isDigit(char_peek())){
-                advance();
-                tempColumn++;
-            }
+            while (Character.isDigit(char_peek())) advance();
         }
         if (isFloat) {
             try{
@@ -341,6 +381,7 @@ public class Lexer implements ILexer {
         column = tempColumn;
         return null;
     }
+
 
     @Override
     public List<IToken.Token> Scanner() {

@@ -39,13 +39,16 @@ public class LexerTests {
 		assertEquals(new IToken.SourceLocation(expectedLine,expectedColumn), t.getSourceLocation());
 	}
 
-	//check that the token has the expected kind and position and text
-	void checkToken(IToken t, Kind expectedKind, int expectedLine, int expectedColumn, String expectedText){
-		assertEquals(expectedKind, t.getKind());
-		assertEquals(expectedText, t.getText());
-		assertEquals(new IToken.SourceLocation(expectedLine,expectedColumn), t.getSourceLocation());
+	void checkFloat(IToken t, float expectedValue) {
+		assertEquals(Kind.FLOAT_LIT, t.getKind());
+		assertEquals(expectedValue, t.getFloatValue());
 	}
 
+	//check that this token  is an FLOAT_LIT with expected float value and position
+	void checkFloat(IToken t, float expectedValue, int expectedLine, int expectedColumn) {
+		checkFloat(t,expectedValue);
+		assertEquals(new IToken.SourceLocation(expectedLine,expectedColumn), t.getSourceLocation());
+	}
 	//check that this token is an IDENT and has the expected name
 	void checkIdent(IToken t, String expectedName){
 		assertEquals(Kind.IDENT, t.getKind());
@@ -71,17 +74,9 @@ public class LexerTests {
 	}
 
 	/*=== NEW CHECK FLOAT FUNCTIONS ===*/
-	//check that this token is an FLOAT_LIT with expected float value
-	void checkFloat(IToken t, float expectedValue) {
-		assertEquals(Kind.FLOAT_LIT, t.getKind());
-		assertEquals(expectedValue, t.getFloatValue());
-	}
+	//check that this token is an FLOAT_LIT with expected int value
 
-	//check that this token  is an FLOAT_LIT with expected float value and position
-	void checkFloat(IToken t, float expectedValue, int expectedLine, int expectedColumn) {
-		checkFloat(t,expectedValue);
-		assertEquals(new IToken.SourceLocation(expectedLine,expectedColumn), t.getSourceLocation());
-	}
+	//check that this token  is an FLOAT_LIT with expected int value and position
 
 	//check that this token is the EOF token
 	void checkEOF(IToken t) {
@@ -255,65 +250,26 @@ public class LexerTests {
 	}
 
 	@Test
-	void testError0_Custom() throws LexicalException {
+	void testIntFloatError() throws LexicalException {
 		String input = """
-			.123
+			0.32
+			0.15
+			10.030.32
 			""";
 		show(input);
 		ILexer lexer = getLexer(input);
-		//this is expected to throw an exception since @ is not a legal
-		//character unless it is part of a string or comment
+		checkFloat(lexer.next(), (float) 0.32,	0, 0);
+		checkFloat(lexer.next(), (float) 0.15,	1, 0);
+		checkFloat(lexer.next(), (float) 10.030,	2, 0);
 		assertThrows(LexicalException.class, () -> {
 			@SuppressWarnings("unused")
 			IToken token = lexer.next();
 		});
 	}
-
-	@Test
-	public void testIdentStr0_Custom() throws LexicalException {
-		String input = """
-			$$__abc__$$
-			__$$abc$$__
-			""";
-		show(input);
-		ILexer lexer = getLexer(input);
-		checkIdent(lexer.next(), "$$__abc__$$", 0,0);
-		checkIdent(lexer.next(), "__$$abc$$__", 1,0);
-		checkEOF(lexer.next());
-	}
-
-	@Test
-	public void testIdentInt0_Custom() throws LexicalException {
-		String input = "0";
-		show(input);
-		ILexer lexer = getLexer(input);
-		checkInt(lexer.next(), 0, 0,0);
-		checkEOF(lexer.next());
-	}
-
-	@Test
-	void testError1_Custom() throws LexicalException {
-		String input = """
-			1.2.45
-			""";
-		show(input);
-		ILexer lexer = getLexer(input);
-		checkFloat(lexer.next(), (float) 1.2, 0,0);
-		assertThrows(LexicalException.class, () -> {
-			@SuppressWarnings("unused")
-			IToken token = lexer.next();
-		});
-	}
-
-	@Test
-	public void testIdentStr1_Custom() throws LexicalException {
-		String input = """
-			abc_123
-			""";
-		show(input);
-		ILexer lexer = getLexer(input);
-		checkIdent(lexer.next(), "abc_123", 0,0);
-		checkEOF(lexer.next());
+	void checkToken(IToken t, Kind expectedKind, int expectedLine, int expectedColumn, String expectedText){
+		assertEquals(expectedKind, t.getKind());
+		assertEquals(expectedText, t.getText());
+		assertEquals(new IToken.SourceLocation(expectedLine,expectedColumn), t.getSourceLocation());
 	}
 
 	@Test
@@ -377,7 +333,9 @@ public class LexerTests {
 		checkEOF(lexer.next());
 	}
 
-	// trying all the single character tokens which aren't the start of multicharacter tokens
+
+
+
 	@Test
 	void testReservedWords() throws LexicalException {
 		String input = """
@@ -451,27 +409,6 @@ public class LexerTests {
 		checkToken(lexer.next(), Kind.KW_CONSOLE,	31, 0, "console");
 		checkEOF(lexer.next());
 	}
-
-	//Example for testing input with an illegal character
-	@Test
-	void testIntFloatError() throws LexicalException {
-		String input = """
-			0.32
-			00.15
-			10.030.32
-			""";
-		show(input);
-		ILexer lexer = getLexer(input);
-		checkFloat(lexer.next(), (float) 0.32,	0, 0);
-		checkInt(lexer.next(), 0, 			1, 0);
-		checkFloat(lexer.next(), (float) 0.15,	1, 1);
-		checkFloat(lexer.next(), (float) 10.030,	2, 0);
-		assertThrows(LexicalException.class, () -> {
-			@SuppressWarnings("unused")
-			IToken token = lexer.next();
-		});
-	}
-
 	@Test
 	public void testStringErrorEOF() throws LexicalException {
 		String input = """
@@ -487,24 +424,12 @@ public class LexerTests {
 	}
 
 	@Test
-	void testError2() throws LexicalException {
+	void testError0_Custom() throws LexicalException {
 		String input = """
-			abc
-			00.4
-			123
-			_Name1
-			_1@
+			.123
 			""";
 		show(input);
 		ILexer lexer = getLexer(input);
-		//these checks should succeed
-		checkIdent(lexer.next(), "abc");
-		checkInt(lexer.next(), 0, 1,0);
-		checkToken(lexer.peek(), Kind.FLOAT_LIT, 1, 1);
-		checkToken(lexer.next(), Kind.FLOAT_LIT, 1, 1);
-		checkToken(lexer.next(), Kind.INT_LIT, 2,0);
-		checkIdent(lexer.next(), "_Name1", 3, 0);
-		checkIdent(lexer.next(), "_1", 4, 0);
 		//this is expected to throw an exception since @ is not a legal
 		//character unless it is part of a string or comment
 		assertThrows(LexicalException.class, () -> {
@@ -512,6 +437,80 @@ public class LexerTests {
 			IToken token = lexer.next();
 		});
 	}
+
+	@Test
+	public void testIdentStr0_Custom() throws LexicalException {
+		String input = """
+			$$__abc__$$
+			__$$abc$$__
+			""";
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkIdent(lexer.next(), "$$__abc__$$", 0,0);
+		checkIdent(lexer.next(), "__$$abc$$__", 1,0);
+		checkEOF(lexer.next());
+	}
+
+	@Test
+	public void testIdentInt0_Custom() throws LexicalException {
+		String input = "0";
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkInt(lexer.next(), 0, 0,0);
+		checkEOF(lexer.next());
+	}
+
+	@Test
+	void testError1_Custom() throws LexicalException {
+		String input = """
+			1.2.45
+			""";
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkFloat(lexer.next(), (float) 1.2, 0,0);
+		assertThrows(LexicalException.class, () -> {
+			@SuppressWarnings("unused")
+			IToken token = lexer.next();
+		});
+	}
+
+	@Test
+	public void testIdentStr1_Custom() throws LexicalException {
+		String input = """
+			abc_123
+			""";
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkIdent(lexer.next(), "abc_123", 0,0);
+		checkEOF(lexer.next());
+	}
+
+
+	@Test
+	public void testBang() throws LexicalException{
+		String input = """
+        !=
+        !!
+        !=!
+        !!=>>>=<-<<<
+        """;
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkToken(lexer.next(), Kind.NOT_EQUALS, 0, 0);
+		checkToken(lexer.next(), Kind.BANG, 1, 0);
+		checkToken(lexer.next(), Kind.BANG, 1, 1);
+		checkToken(lexer.next(), Kind.NOT_EQUALS, 2, 0);
+		checkToken(lexer.next(), Kind.BANG, 2, 2);
+		checkToken(lexer.next(), Kind.BANG, 3, 0 );
+		checkToken(lexer.next(), Kind.NOT_EQUALS, 3, 1);
+		checkToken(lexer.next(), Kind.RANGLE, 3, 3);
+		checkToken(lexer.next(), Kind.GE, 3, 5);
+		checkToken(lexer.next(), Kind.LARROW, 3,7);
+		checkToken(lexer.next(), Kind.LANGLE, 3, 9);
+		checkToken(lexer.next(), Kind.LT, 3, 11);
+		checkEOF(lexer.next());
+	}
+
 	@Test
 	void testMany() throws LexicalException {
 		String input = """
@@ -554,28 +553,7 @@ public class LexerTests {
 		checkToken(lexer.next(), Kind.RSQUARE, 4,0);
 		checkEOF(lexer.next());
 	}
-	@Test
-	public void testBang() throws LexicalException{
-		String input = """
-        !=
-        !!
-        !=!
-        !!=>>>=<-<<<
-        """;
-		show(input);
-		ILexer lexer = getLexer(input);
-		checkToken(lexer.next(), Kind.NOT_EQUALS, 0, 0);
-		checkToken(lexer.next(), Kind.BANG, 1, 0);
-		checkToken(lexer.next(), Kind.BANG, 1, 1);
-		checkToken(lexer.next(), Kind.NOT_EQUALS, 2, 0);
-		checkToken(lexer.next(), Kind.BANG, 2, 2);
-		checkToken(lexer.next(), Kind.BANG, 3, 0 );
-		checkToken(lexer.next(), Kind.NOT_EQUALS, 3, 1);
-		checkToken(lexer.next(), Kind.RANGLE, 3, 3);
-		checkToken(lexer.next(), Kind.GE, 3, 5);
-		checkToken(lexer.next(), Kind.LARROW, 3,7);
-		checkToken(lexer.next(), Kind.LANGLE, 3, 9);
-		checkToken(lexer.next(), Kind.LT, 3, 11);
-		checkEOF(lexer.next());
-	}
+
+
+
 }
