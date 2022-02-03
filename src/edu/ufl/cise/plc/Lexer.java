@@ -31,6 +31,9 @@ public class Lexer implements ILexer {
         keywords.put("MAGENTA",    IToken.Kind.COLOR_CONST);
         keywords.put("ORANGE",    IToken.Kind.COLOR_CONST);
         keywords.put("PINK",    IToken.Kind.COLOR_CONST);
+        keywords.put("RED",    IToken.Kind.COLOR_CONST);
+        keywords.put("WHITE",    IToken.Kind.COLOR_CONST);
+        keywords.put("YELLOW",    IToken.Kind.COLOR_CONST);
 
         keywords.put("getRed", IToken.Kind.COLOR_OP);
         keywords.put("getGreen", IToken.Kind.COLOR_OP);
@@ -90,6 +93,11 @@ public class Lexer implements ILexer {
     public char char_peekNext() {
         if (current + 1 >= source.length()) return '\0';
         return source.charAt(current + 1);
+    }
+
+    public char char_peekBefore() {
+        if (current - 1 < 0) return '\0';
+        return source.charAt(current - 1);
     }
     @Override
     public IToken next() throws LexicalException {
@@ -160,10 +168,10 @@ public class Lexer implements ILexer {
         switch (c) {
             // cases for single and double lexemes.
             case' ':  ; break;
-            case'(': addToken(IToken.Kind.RPAREN); break;
-            case ')': addToken(IToken.Kind.LPAREN); break;
-            case '[' : addToken(IToken.Kind.RSQUARE); break;
-            case ']' : addToken(IToken.Kind.LSQUARE); break;
+            case'(': addToken(IToken.Kind.LPAREN); break;
+            case ')': addToken(IToken.Kind.RPAREN); break;
+            case '[' : addToken(IToken.Kind.LSQUARE); break;
+            case ']' : addToken(IToken.Kind.RSQUARE); break;
             case '+' : addToken(IToken.Kind.PLUS); break;
             case '*' : addToken(IToken.Kind.TIMES); break;
             case '/' : addToken(IToken.Kind.DIV); break;
@@ -242,6 +250,7 @@ public class Lexer implements ILexer {
             default:
 
                 if (Character.isDigit(c)) {
+                    /* current char c is not the same as char_peek() */
                     numberToLexeme();
                 }
                 else if (Character.isAlphabetic(c) || c == '_' || c == '$'){
@@ -264,7 +273,7 @@ public class Lexer implements ILexer {
     @Override
     public void stringToLexeme() {
         boolean iterate = true;
-
+        int tempColumn = column;
         while (char_peek() != '"' && !isAtEnd()) {
             if (char_peek() == '\n') {
                 line++;
@@ -272,8 +281,10 @@ public class Lexer implements ILexer {
             }
             else if(char_peek() == '\\' && char_peekNext() == '"'){
                 advance();
+                tempColumn++;
             }
             advance();
+            tempColumn++;
         }
         // Unterminated string.
         if (isAtEnd()) {
@@ -281,8 +292,10 @@ public class Lexer implements ILexer {
         }
         // The closing ".
         advance();
+        tempColumn++;
         String value = source.substring(start, current);
         addToken(IToken.Kind.STRING_LIT, value);
+        column = tempColumn;
     }
 
     @Override
@@ -295,10 +308,15 @@ public class Lexer implements ILexer {
         }
         // Look for a fractional part.
         if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
+
             // Consume the "."
             isFloat = true;
             advance();
-            while (Character.isDigit(char_peek())) advance();
+            tempColumn++;
+            while (Character.isDigit(char_peek())){
+                advance();
+                tempColumn++;
+            }
         }
         if (isFloat) {
             try{
