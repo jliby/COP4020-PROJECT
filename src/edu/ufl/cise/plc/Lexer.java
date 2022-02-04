@@ -98,7 +98,8 @@ public class Lexer implements ILexer {
     @Override
     public IToken next() throws LexicalException {
         IToken token = tokens.get(currentToken);
-        currentToken += 1;
+            currentToken += 1;
+
         if (token.getKind() == IToken.Kind.ERROR) {
             throw new LexicalException("test");
         }
@@ -123,8 +124,11 @@ public class Lexer implements ILexer {
 
     @Override
     public char advance() {
-        current++;
-        return source.charAt(current - 1);
+
+            current++;
+            return source.charAt(current - 1);
+
+
     }
 
     @Override
@@ -314,7 +318,18 @@ public class Lexer implements ILexer {
                 tempColumn++;
             }
         }
-        if (isFloat) {
+
+        if (char_peek() == '.') {
+            if (!Character.isDigit(char_peekNext())) {
+                addToken(IToken.Kind.ERROR);
+                return null;
+            }
+
+            }
+
+
+
+            if (isFloat) {
             try{
                 Float.parseFloat(source.substring(start, current));
             }
@@ -334,6 +349,7 @@ public class Lexer implements ILexer {
             }
             addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
         }
+
         column = tempColumn;
         return null;
     }
