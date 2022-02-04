@@ -282,9 +282,22 @@ public class Lexer implements ILexer {
                 line++;
                 column = 0;
             }
-            else if(char_peek() == '\\' && char_peekNext() == '"'){
-                advance();
-                tempColumn++;
+            else if(char_peek() == '\\'){
+                if (char_peekNext() == 'b' ||
+                char_peekNext() == 't' ||
+                char_peekNext() == 'n' ||
+                char_peekNext() == 'f' ||
+                char_peekNext() == 'r' ||
+                char_peekNext() == '"' ||
+                char_peekNext() == '\'' ||
+                char_peekNext() == '\\'){
+                    advance();
+                    tempColumn++;
+                }
+                else{
+                    addToken(IToken.Kind.ERROR);
+                    return;
+                }
             }
             advance();
             tempColumn++;
