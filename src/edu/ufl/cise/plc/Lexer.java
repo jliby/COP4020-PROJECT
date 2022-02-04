@@ -124,7 +124,6 @@ public class Lexer implements ILexer {
     @Override
     public char advance() {
         current++;
-        //next character in source string
         return source.charAt(current - 1);
     }
 
@@ -135,7 +134,7 @@ public class Lexer implements ILexer {
             advance();
             tempColumn++;
         }
-        // See if the identifier is a reserved word.
+
         String text = source.substring(start, current);
         IToken.Kind type;
         if (keywords.containsKey(text)) {
@@ -163,7 +162,6 @@ public class Lexer implements ILexer {
         char c = advance();
         column++;
         switch (c) {
-            // cases for single and double lexemes.
 
             case '0' :
                 if (char_peek() == '0'){
@@ -287,12 +285,10 @@ public class Lexer implements ILexer {
             advance();
             tempColumn++;
         }
-        // Unterminated string.
         if (isAtEnd()) {
             addToken(IToken.Kind.ERROR);
             return;
         }
-        // The closing ".
         advance();
         tempColumn++;
         String value = source.substring(start, current);
@@ -308,9 +304,8 @@ public class Lexer implements ILexer {
             advance();
             tempColumn++;
         }
-        // Look for a fractional part.
         if (char_peek() == '.' && Character.isDigit(char_peekNext())) {
-            // Consume the "."
+
             isFloat = true;
             advance();
             tempColumn++;
@@ -366,4 +361,6 @@ public class Lexer implements ILexer {
         String text = source.substring(start, current);
         tokens.add(new IToken.Token(type, text, literal, line, column, false));
     }
+
 }
+

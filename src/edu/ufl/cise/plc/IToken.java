@@ -2,37 +2,37 @@ package edu.ufl.cise.plc;
 
 public interface IToken {
 
-    public record SourceLocation(int line, int column) {}
+	public record SourceLocation(int line, int column) {}
 
 	public static enum Kind {
-		IDENT, 
-		INT_LIT, 
-		FLOAT_LIT, 
-		STRING_LIT, 
-		BOOLEAN_LIT,// 'true','false'
+		IDENT,
+		INT_LIT,
+		FLOAT_LIT,
+		STRING_LIT,
+		BOOLEAN_LIT, // 'true','false'
 		LPAREN, // '('
 		RPAREN, // ')'
 		LSQUARE, // '['
 		RSQUARE, // ']'
-		LANGLE,  // '<<'
-		RANGLE,  // '>>'
-		PLUS,  // '+'
+		LANGLE, // '<<'
+		RANGLE, // '>>'
+		PLUS, // '+'
 		MINUS, // '-'
-		TIMES,  // '*'
-		DIV,  //  '/'
-		MOD,  // '%'
+		TIMES, // '*'
+		DIV, //  '/'
+		MOD, // '%'
 		COLOR_CONST, // 'BLACK','BLUE','CYAN','DARK_GRAY','GRAY','GREEN','LIGHT_GRAY','MAGENTA','ORANGE','PINK',
-					// 'RED','WHITE','YELLOW'
+		// 'RED','WHITE','YELLOW'
 		KW_IF, // 'if'
 		KW_FI, //'fi'
 		KW_ELSE, //'else'
 		KW_WRITE, // 'write'
 		KW_CONSOLE, // 'console'
 		AND, // '&'
-		OR,  // '|'
+		OR, // '|'
 		BANG, // '!'
-		LT,  // '<'
-		GT,  // '>'
+		LT, // '<'
+		GT, // '>'
 		EQUALS, // '=='
 		NOT_EQUALS, // '!='
 		LE, //  '<='
@@ -46,7 +46,7 @@ public interface IToken {
 		RARROW, // '->'
 		LARROW, // '<-'
 		KW_VOID, // 'void'
-		RETURN,// '^'
+		RETURN, // '^'
 		EOF, // used as sentinal, does not correspond to input
 		ERROR, // use to avoid exceptions if scanning all input at once
 	}
@@ -57,7 +57,7 @@ public interface IToken {
 	//returns the characters in the source code that correspond to this token
 	//if the token is a STRING_LIT, this returns the raw characters, including delimiting "s and unhandled escape sequences.
 	public String getText();
-	
+
 	//returns the location in the source code of the first character of the token.
 	public SourceLocation getSourceLocation();
 
@@ -71,11 +71,10 @@ public interface IToken {
 
 	//returns the boolean value represented by the characters of this token if kind is BOOLEAN_LIT
 	public boolean getBooleanValue();
-	
-	//returns the String represented by the characters of this token if kind is STRING_LIT
-	//The delimiters should be removed and escape sequences replaced by the characters they represent.  
-	public String getStringValue();
 
+	//returns the String represented by the characters of this token if kind is STRING_LIT
+	//The delimiters should be removed and escape sequences replaced by the characters they represent.
+	public String getStringValue();
 
 	class Token implements IToken {
 
@@ -92,7 +91,7 @@ public interface IToken {
 			this.literal = literal;
 			this.line = line;
 			this.column = column;
-			this.isException =  isException;
+			this.isException = isException;
 		}
 
 		@Override
@@ -140,8 +139,8 @@ public interface IToken {
 		public String getStringValue() {
 			String rawStr = literal.toString();
 			String returnStr = "";
-			for(int i = 1; i < rawStr.length()-1; i++) {
-				if(rawStr.charAt(i) == '\\') {
+			for (int i = 1; i < rawStr.length() - 1; i++) {
+				if (rawStr.charAt(i) == '\\') {
 					if (rawStr.charAt(i + 1) == 'b') {
 						returnStr += '\b';
 					} else if (rawStr.charAt(i + 1) == 't') {
@@ -160,8 +159,7 @@ public interface IToken {
 						returnStr += '\\';
 					}
 					i++;
-				}
-				else {
+				} else {
 					returnStr += rawStr.charAt(i);
 				}
 			}
@@ -169,4 +167,3 @@ public interface IToken {
 		}
 	}
 }
-
