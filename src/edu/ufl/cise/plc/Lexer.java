@@ -277,10 +277,13 @@ public class Lexer implements ILexer {
     public void stringToLexeme() {
         boolean iterate = true;
         int tempColumn = column;
+        int originalLine = line;
         while (char_peek() != '"' && !isAtEnd()) {
             if (char_peek() == '\n') {
                 line++;
-                column = 0;
+                tempColumn = -1;
+                advance();
+                continue;
             }
             else if(char_peek() == '\\'){
                 if (char_peekNext() == 'b' ||
@@ -306,11 +309,15 @@ public class Lexer implements ILexer {
             addToken(IToken.Kind.ERROR);
             return;
         }
+        int tempLine = line;
+        line = originalLine;
+
         advance();
         tempColumn++;
         String value = source.substring(start, current);
         addToken(IToken.Kind.STRING_LIT, value);
         column = tempColumn;
+        line = tempLine;
     }
 
     @Override
