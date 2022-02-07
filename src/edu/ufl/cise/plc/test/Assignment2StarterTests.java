@@ -6,7 +6,7 @@
 //import static edu.ufl.cise.plc.IToken.Kind.MINUS;
 //import static edu.ufl.cise.plc.IToken.Kind.PLUS;
 //import static edu.ufl.cise.plc.IToken.Kind.TIMES;
-//import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.instanceOf;
 //import static org.hamcrest.MatcherAssert.assertThat;
 //import static org.junit.jupiter.api.Assertions.assertEquals;
 //import static org.junit.jupiter.api.Assertions.assertThrows;
