@@ -1102,4 +1102,41 @@ public class LexerTests {
 			lexer.next();
 		});
 	}
+
+	@Test
+	void testNumAndDecial() throws LexicalException
+	{
+		String input = "1.";
+		show(input);
+		ILexer lexer = getLexer(input);
+		Exception e = assertThrows(LexicalException.class, () -> {
+			lexer.next();
+		});
+	}
+
+	@Test
+	public void testTabString1() throws LexicalException
+	{
+		String input = """
+					abc def
+				""";
+		ILexer lexer = getLexer(input);
+		checkToken(lexer.next(), Kind.IDENT, 0, 1, "abc");
+		checkToken(lexer.next(), Kind.IDENT, 0, 5, "def");
+	}
+
+	@Test
+	public void testTabString2() throws LexicalException
+	{
+		String input = """
+					
+				 
+				 	getREDgetBLUE
+				 getRED+getBLUE
+				""";
+		ILexer lexer = getLexer(input);
+		checkToken(lexer.next(), Kind.IDENT, 2, 2, "getREDgetBLUE");
+		checkToken(lexer.next(), Kind.IDENT, 3, 1, "getRED");
+		checkToken(lexer.next(), Kind.PLUS, 3, 7, "+");
+	}
 }

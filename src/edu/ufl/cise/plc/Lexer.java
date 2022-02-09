@@ -173,9 +173,9 @@ public class Lexer implements ILexer {
                 }
                 break;
             case' ':  ; break;
-            case'(': addToken(IToken.Kind.LPAREN); break;
-            case ')': addToken(IToken.Kind.RPAREN); break;
-            case '[' : addToken(IToken.Kind.LSQUARE); break;
+            case'(': addToken(IToken.Kind.LPAREN, "("); break;
+            case ')': addToken(IToken.Kind.RPAREN, ")"); break;
+            case '[' : addToken(IToken.Kind.LSQUARE, "["); break;
             case ']' : addToken(IToken.Kind.RSQUARE); break;
             case '+' : addToken(IToken.Kind.PLUS); break;
             case '*' : addToken(IToken.Kind.TIMES); break;
@@ -190,25 +190,25 @@ public class Lexer implements ILexer {
 
             case '-' :
                 if(match('>')) {
-                    addToken(IToken.Kind.RARROW);
+                    addToken(IToken.Kind.RARROW, "->");
                     column++;
                 } else {
-                    addToken(IToken.Kind.MINUS);
+                    addToken(IToken.Kind.MINUS, "-");
                 }
                 break;
 
             case '!' :
                 if(match('=')) {
-                    addToken(IToken.Kind.NOT_EQUALS);
+                    addToken(IToken.Kind.NOT_EQUALS, "!=");
                     column++;
                 } else {
-                    addToken(IToken.Kind.BANG);
+                    addToken(IToken.Kind.BANG, "!");
                 }
                 break;
 
             case '=' :
                 if(match('=')) {
-                    addToken(IToken.Kind.EQUALS);
+                    addToken(IToken.Kind.EQUALS, "==");
                     column++;
                 } else {
                     addToken(IToken.Kind.ASSIGN, "=");
@@ -217,42 +217,40 @@ public class Lexer implements ILexer {
 
             case '<' :
                 if (match('=') ){
-                    addToken(IToken.Kind.LE);
+                    addToken(IToken.Kind.LE, "<=");
                     column++;
                 }
                 else if (match('-')) {
-                    addToken(IToken.Kind.LARROW);
+                    addToken(IToken.Kind.LARROW, "<-");
                     column++;
                 }
                 else if (match('<')) {
-                    addToken(IToken.Kind.LANGLE);
+                    addToken(IToken.Kind.LANGLE, "<<");
                     column++;
                 }
                 else {
-                    addToken(IToken.Kind.LT);
+                    addToken(IToken.Kind.LT, "<");
                 }
                 break;
 
             case '>' :
                 if (match('=') ){
-                    addToken(IToken.Kind.GE);
+                    addToken(IToken.Kind.GE, ">=");
                     column++;
                 }
                 else if (match('>')) {
-                    addToken(IToken.Kind.RANGLE);
+                    addToken(IToken.Kind.RANGLE, ">>");
                     column++;
                 }
                 else {
-                    addToken(IToken.Kind.GT);
+                    addToken(IToken.Kind.GT, ">");
                 }
                 break;
 
             // scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
             case '"': stringToLexeme(); break;
             case '\n': line_column_tracker(); break;
-            case '\t':
-                column--;
-                break;
+            case '\t': break;
             default:
                 if (isDigit(c)) {
                     numberToLexeme();
