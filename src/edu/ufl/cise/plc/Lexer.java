@@ -79,15 +79,6 @@ public class Lexer implements ILexer {
         return isAlpha(c) || isDigit(c);
     }
 
-    public boolean isASCII(char c){
-        if ((int)c > 127){
-            System.out.println("Unicode");
-            return false;
-        }
-        System.out.println("Valid");
-        return true;
-    }
-
     @Override
     public boolean isDigit(char c) {
         return c >= '0' && c <= '9';
@@ -133,11 +124,8 @@ public class Lexer implements ILexer {
 
     @Override
     public char advance() {
-
             current++;
             return source.charAt(current - 1);
-
-
     }
 
     @Override
@@ -154,12 +142,6 @@ public class Lexer implements ILexer {
             type = keywords.get(text);
             addToken(type, text);
         } else {
-//            if(!isASCII(char_peek())){
-//                //addToken(IToken.Kind.ERROR);
-//            }
-//            else{
-//                //addToken(IToken.Kind.IDENT, text);
-//            }
             addToken(IToken.Kind.IDENT, text);
         }
         column = tempColumn;
@@ -275,13 +257,10 @@ public class Lexer implements ILexer {
                 if (isDigit(c)) {
                     numberToLexeme();
                 }
-                else if ((Character.isAlphabetic(c) || c == '_' || c == '$')){
-                    //System.out.println(c);
-
+                else if ((isAlpha(c) || c == '_' || c == '$')){
                     identifier();
                 }
                 else {
-                    //System.out.println(c);
                     addToken(IToken.Kind.ERROR);
                 }
                 break;
@@ -365,11 +344,7 @@ public class Lexer implements ILexer {
                 addToken(IToken.Kind.ERROR);
                 return null;
             }
-
-            }
-
-
-
+        }
             if (isFloat) {
             try{
                 Float.parseFloat(source.substring(start, current));
@@ -390,7 +365,6 @@ public class Lexer implements ILexer {
             }
             addToken(IToken.Kind.INT_LIT, Integer.parseInt(source.substring(start, current)));
         }
-
         column = tempColumn;
         return null;
     }
@@ -418,6 +392,5 @@ public class Lexer implements ILexer {
         String text = source.substring(start, current);
         tokens.add(new IToken.Token(type, text, literal, line, column, false));
     }
-
 }
 
