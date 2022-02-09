@@ -214,7 +214,7 @@ public class Lexer implements ILexer {
                     addToken(IToken.Kind.EQUALS);
                     column++;
                 } else {
-                    addToken(IToken.Kind.ASSIGN);
+                    addToken(IToken.Kind.ASSIGN, "=");
                 }
                 break;
 
@@ -253,6 +253,9 @@ public class Lexer implements ILexer {
             // scanning source string for literals that are: strings, floats, ints, speacial keywords, and conditional statements
             case '"': stringToLexeme(); break;
             case '\n': line_column_tracker(); break;
+            case '\t':
+                column--;
+                break;
             default:
                 if (Character.isDigit(c)) {
                     numberToLexeme();
@@ -268,7 +271,7 @@ public class Lexer implements ILexer {
     }
 
     public void commentSkip() {
-        while (char_peek() != '\n') {
+        while (char_peek() != '\n' && !isAtEnd()) {
             advance();
         }
     }
