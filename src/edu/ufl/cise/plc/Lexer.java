@@ -257,10 +257,10 @@ public class Lexer implements ILexer {
                 column--;
                 break;
             default:
-                if (Character.isDigit(c)) {
+                if (isDigit(c)) {
                     numberToLexeme();
                 }
-                else if (Character.isAlphabetic(c) || c == '_' || c == '$'){
+                else if (isAlpha(c) || c == '_' || c == '$'){
                     identifier();
                 }
                 else {
