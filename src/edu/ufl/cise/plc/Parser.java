@@ -128,6 +128,18 @@ public class Parser implements IParser {
             e = expr();
             match(RPAREN);
         }
+        else if (isKind(BOOLEAN_LIT)){
+            e = new BooleanLitExpr(firstToken);
+            consume();
+        }
+        else if (isKind(STRING_LIT)){
+            e = new StringLitExpr(firstToken);
+            consume();
+        }
+        else if (isKind(FLOAT_LIT)){
+            e = new FloatLitExpr(firstToken);
+            consume();
+        }
         else {
             throw new LexicalException("");
         }
