@@ -44,9 +44,7 @@ public interface ILexer {
 
 	void stringToLexeme();
 
-
-	List<IToken.Token> Scanner() throws LexicalException;
-
+	List<Token> Scanner() throws LexicalException;
 
 }
 

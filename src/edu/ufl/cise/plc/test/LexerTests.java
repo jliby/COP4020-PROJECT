@@ -1138,5 +1138,6 @@ public class LexerTests {
 		checkToken(lexer.next(), Kind.IDENT, 2, 2, "getREDgetBLUE");
 		checkToken(lexer.next(), Kind.IDENT, 3, 1, "getRED");
 		checkToken(lexer.next(), Kind.PLUS, 3, 7, "+");
+		checkToken(lexer.next(), Kind.IDENT, 3, 8, "getBLUE");
 	}
 }

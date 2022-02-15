@@ -61,7 +61,7 @@ public class Lexer implements ILexer {
     int column = -1;
 
     String source = "";
-    List<IToken.Token> tokens = new ArrayList<>();
+    List<Token> tokens = new ArrayList<>();
 
     Lexer(String source) {
         this.source = source;
@@ -176,16 +176,16 @@ public class Lexer implements ILexer {
             case'(': addToken(IToken.Kind.LPAREN, "("); break;
             case ')': addToken(IToken.Kind.RPAREN, ")"); break;
             case '[' : addToken(IToken.Kind.LSQUARE, "["); break;
-            case ']' : addToken(IToken.Kind.RSQUARE); break;
-            case '+' : addToken(IToken.Kind.PLUS); break;
-            case '*' : addToken(IToken.Kind.TIMES); break;
-            case '/' : addToken(IToken.Kind.DIV); break;
-            case '^' : addToken(IToken.Kind.RETURN); break;
-            case '%' : addToken(IToken.Kind.MOD); break;
-            case ',' : addToken(IToken.Kind.COMMA); break;
-            case ';' : addToken(IToken.Kind.SEMI); break;
-            case '&' : addToken(IToken.Kind.AND); break;
-            case '|' : addToken( IToken.Kind.OR); break;
+            case ']' : addToken(IToken.Kind.RSQUARE, "]"); break;
+            case '+' : addToken(IToken.Kind.PLUS, "+"); break;
+            case '*' : addToken(IToken.Kind.TIMES, "*"); break;
+            case '/' : addToken(IToken.Kind.DIV, "/"); break;
+            case '^' : addToken(IToken.Kind.RETURN, "^"); break;
+            case '%' : addToken(IToken.Kind.MOD, "%"); break;
+            case ',' : addToken(IToken.Kind.COMMA, ","); break;
+            case ';' : addToken(IToken.Kind.SEMI, ";"); break;
+            case '&' : addToken(IToken.Kind.AND, "&"); break;
+            case '|' : addToken( IToken.Kind.OR, "|"); break;
             case '#' : commentSkip(); break;
 
             case '-' :
@@ -368,14 +368,14 @@ public class Lexer implements ILexer {
     }
 
     @Override
-    public List<IToken.Token> Scanner() {
+    public List<Token> Scanner() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
             start = current;
             scanToken();
         }
         column += 1;
-        tokens.add(new IToken.Token(IToken.Kind.EOF, "", null, line, column, false));
+        tokens.add(new Token(IToken.Kind.EOF, "", null, line, column, false));
 
         return tokens;
     }
@@ -388,7 +388,7 @@ public class Lexer implements ILexer {
     @Override
     public void addToken(IToken.Kind type, Object literal) {
         String text = source.substring(start, current);
-        tokens.add(new IToken.Token(type, text, literal, line, column, false));
+        tokens.add(new Token(type, text, literal, line, column, false));
     }
 }
 
