@@ -80,16 +80,17 @@ public class Parser implements IParser {
         return AST;
     }
 
-    public Expr Expression() throws LexicalException{
-        Token firstToken = t;
+    public Expr expr() throws LexicalException{
+        Token firstToken = currentToken;
         Expr left = null;
         Expr right = null;
         left = term();
         while (isKind(PLUS) || isKind(MINUS)){
-            IToken op = t;
+            IToken op = firstToken;
             consume();
             right = term();
             left = new BinaryExpr(firstToken, left, op, right);
+            consume();
         }
         return left;
 
@@ -101,18 +102,22 @@ public class Parser implements IParser {
 
     }
     public Expr term() throws LexicalException {
+        Token firstToken = currentToken;
         Expr left = null;
         Expr right = null;
         left = factor();
-        if(isKind(TIMES) || isKind(DIV)){
+        while(isKind(TIMES) || isKind(DIV)){
+            IToken op = firstToken;
             consume();
-            factor();
+            right = factor();
+            left = new BinaryExpr(firstToken, left, op, right);
+            consume();
         }
-        return factor();
+        return left;
     }
 
     public Expr factor() throws LexicalException {
-        IToken firstToken = t;
+        IToken firstToken = currentToken;
         Expr e = null;
         if(isKind(INT_LIT)){
             e = new IntLitExpr(firstToken);
@@ -120,7 +125,7 @@ public class Parser implements IParser {
         }
         else if (isKind(LPAREN)){
             consume();
-            e = Expression();
+            e = expr();
             match(RPAREN);
         }
         else {
