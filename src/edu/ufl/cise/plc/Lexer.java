@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class Lexer implements ILexer {
 
+
     public static Map<String, IToken.Kind> keywords;
-    int next = 0;
     int currentToken = 0;
 
     static {
@@ -67,35 +68,30 @@ public class Lexer implements ILexer {
         this.source = source;
     }
 
-    @Override
     public boolean isAlpha(char c) {
         return (c >= 'a' && c <= 'z') ||
                 (c >= 'A' && c <= 'Z') ||
                 c == '_' || c == '$';
     }
 
-    @Override
     public boolean isAlphaNumeric(char c) {
         return isAlpha(c) || isDigit(c);
     }
 
-    @Override
     public boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
 
-    @Override
     public char char_peek() {
         if (isAtEnd()) return '\0';
         return source.charAt(current);
     }
 
-    @Override
     public char char_peekNext() {
         if (current + 1 >= source.length()) return '\0';
         return source.charAt(current + 1);
     }
-    @Override
+
     public IToken next() throws LexicalException {
         IToken token = tokens.get(currentToken);
             currentToken += 1;
@@ -106,7 +102,6 @@ public class Lexer implements ILexer {
         return token;
     }
 
-    @Override
     public IToken peek() throws LexicalException {
         // convert into token and return
         //Changed arg from currentToken++ to currentToken
@@ -114,7 +109,6 @@ public class Lexer implements ILexer {
         return token;
     }
 
-    @Override
     public boolean match(char expected) {
         if (isAtEnd()) return false;
         if (source.charAt(current) != expected) return false;
@@ -122,13 +116,11 @@ public class Lexer implements ILexer {
         return true;
     }
 
-    @Override
     public char advance() {
             current++;
             return source.charAt(current - 1);
     }
 
-    @Override
     public void identifier() {
         int tempColumn = column;
         while (isAlphaNumeric(char_peek())){
@@ -152,13 +144,11 @@ public class Lexer implements ILexer {
         this.column = -1;
     }
 
-    @Override
     public boolean isAtEnd() {
         // check's if at end of lexeme
         return current >= source.length();
     }
 
-    @Override
     public void scanToken() {
         char c = advance();
         column++;
@@ -271,7 +261,6 @@ public class Lexer implements ILexer {
         }
     }
 
-    @Override
     public void stringToLexeme() {
         boolean iterate = true;
         int tempColumn = column;
@@ -318,7 +307,6 @@ public class Lexer implements ILexer {
         line = tempLine;
     }
 
-    @Override
     public LexicalException numberToLexeme() {
         boolean isFloat = false;
         int tempColumn = column;
@@ -367,7 +355,6 @@ public class Lexer implements ILexer {
         return null;
     }
 
-    @Override
     public List<Token> Scanner() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
@@ -380,12 +367,10 @@ public class Lexer implements ILexer {
         return tokens;
     }
 
-    @Override
     public void addToken(IToken.Kind type) {
         addToken(type, null);
     }
 
-    @Override
     public void addToken(IToken.Kind type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line, column, false));
