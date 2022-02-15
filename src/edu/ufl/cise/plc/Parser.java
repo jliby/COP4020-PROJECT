@@ -61,7 +61,7 @@ public class Parser implements IParser {
     private boolean match(Token.Kind... types) {
         for (Token.Kind type : types) {
             if (check(type)) {
-                advance();
+                consume();
                 return true;
             }
         }
@@ -90,7 +90,6 @@ public class Parser implements IParser {
     }
 
     public void ConditionalExpression() {
-        term();
         if (isKind(KW_IF)) {
             consume();
         } else {
@@ -115,6 +114,8 @@ public class Parser implements IParser {
         else {
             // return an error
         }
+
+        Expression();
 
         if(isKind(KW_FI)) {
             consume();
