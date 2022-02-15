@@ -1,8 +1,6 @@
 package edu.ufl.cise.plc;
 
-import edu.ufl.cise.plc.ast.ASTNode;
-import edu.ufl.cise.plc.ast.ASTVisitor;
-import edu.ufl.cise.plc.ast.Expr;
+import edu.ufl.cise.plc.ast.*;
 
 import java.beans.Expression;
 import java.util.List;
@@ -15,10 +13,12 @@ public class Parser implements IParser {
     private final List<Token> tokens;
     private int current = 0;
     public Token currentToken;
+    public Token t;
 
     Parser(List<Token> tokens) {
         this.tokens = tokens;
         currentToken = tokens.get(0);
+        t = tokens.get(0);
     }
 
     // helper functions for tokens list
@@ -73,21 +73,62 @@ public class Parser implements IParser {
         ASTNode AST;
         try {
          AST = Expression();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
         return AST;
     }
 
-    public void Expression() {
-
-        if ( isKind(KW_IF)) {
-            ConditionalExpression();
-        } else if (isKind(BANG, MINUS, COLOR_OP, IMAGE_OP)) {
-            LogicalOrExpression();
+    public Expr Expression() throws LexicalException{
+        Token firstToken = t;
+        Expr left = null;
+        Expr right = null;
+        left = term();
+        while (isKind(PLUS) || isKind(MINUS)){
+            IToken op = t;
+            consume();
+            right = term();
+            left = new BinaryExpr(firstToken, left, op, right);
         }
+        return left;
+
+//        if ( isKind(KW_IF)) {
+//            ConditionalExpression();
+//        } else if (isKind(BANG, MINUS, COLOR_OP, IMAGE_OP)) {
+//            LogicalOrExpression();
+//        }
 
     }
+    public Expr term() throws LexicalException {
+        Expr left = null;
+        Expr right = null;
+        left = factor();
+        if(isKind(TIMES) || isKind(DIV)){
+            consume();
+            factor();
+        }
+        return factor();
+    }
+
+    public Expr factor() throws LexicalException {
+        IToken firstToken = t;
+        Expr e = null;
+        if(isKind(INT_LIT)){
+            e = new IntLitExpr(firstToken);
+            consume();
+        }
+        else if (isKind(LPAREN)){
+            consume();
+            e = Expression();
+            match(RPAREN);
+        }
+        else {
+            throw new LexicalException("");
+        }
+        return e;
+    }
+
 
     public void ConditionalExpression() {
         if (isKind(KW_IF)) {
@@ -182,13 +223,4 @@ public class Parser implements IParser {
     public Expr PixelSelector() {
 
         }
-
-    public void factor() {
-
-    }
-
-
-
-
-
 }
