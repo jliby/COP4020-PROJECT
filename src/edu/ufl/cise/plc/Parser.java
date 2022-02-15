@@ -12,21 +12,21 @@ import static edu.ufl.cise.plc.IToken.Kind.*;
 public class Parser implements IParser {
 
 // tokens list
-    private final List<IToken.Token> tokens;
+    private final List<Token> tokens;
     private int current = 0;
-    public IToken.Token currentToken;
+    public Token currentToken;
 
-    Parser(List<IToken.Token> tokens) {
+    Parser(List<Token> tokens) {
         this.tokens = tokens;
         currentToken = tokens.get(0);
     }
 
     // helper functions for tokens list
-    private boolean check(IToken.Token.Kind type) {
+    private boolean check(Token.Kind type) {
         if (isAtEnd()) return false;
         return peek().type == type;
     }
-    private IToken.Token consume() {
+    private Token consume() {
         if (!isAtEnd()) current++;
         return previous();
     }
@@ -36,21 +36,21 @@ public class Parser implements IParser {
         return peek().type == EOF;
     }
 
-    private IToken.Token peek() {
+    private Token peek() {
         return tokens.get(current);
     }
 
-    private IToken.Token previous() {
+    private Token previous() {
         return tokens.get(current - 1);
     }
 
 
-    protected boolean isKind(IToken.Token.Kind kind) {
+    protected boolean isKind(Token.Kind kind) {
         return currentToken.type == kind;
     }
 
-    protected boolean isKind(IToken.Token.Kind... kinds) {
-        for (IToken.Token.Kind k: kinds) {
+    protected boolean isKind(Token.Kind... kinds) {
+        for (Token.Kind k: kinds) {
             if (k== currentToken.type) {
                 return true;
             }
@@ -58,8 +58,8 @@ public class Parser implements IParser {
         return false;
     }
 
-    private boolean match(IToken.Token.Kind... types) {
-        for (IToken.Token.Kind type : types) {
+    private boolean match(Token.Kind... types) {
+        for (Token.Kind type : types) {
             if (check(type)) {
                 advance();
                 return true;
