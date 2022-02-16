@@ -196,7 +196,9 @@ public class Parser implements IParser {
         Token firstToken = currentToken;
         Expr e = null;
         consume();
+        match(LPAREN);
         Expr condition = exprNew();
+        match(RPAREN);
         Expr trueCase = exprNew();
         match(KW_ELSE);
         e = new ConditionalExpr(firstToken, condition, trueCase, expr());
@@ -307,6 +309,12 @@ public class Parser implements IParser {
         else if (isKind(LPAREN)){
             e = exprNew();
             match(RPAREN);
+        }
+        else if (isKind(ERROR)){
+            throw new LexicalException("");
+        }
+        else{
+            throw new SyntaxException("");
         }
         return e;
     }
