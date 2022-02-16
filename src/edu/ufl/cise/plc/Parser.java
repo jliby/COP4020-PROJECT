@@ -203,7 +203,9 @@ public class Parser implements IParser {
         Expr trueCase = exprNew();
         match(KW_ELSE);
         e = new ConditionalExpr(firstToken, condition, trueCase, expr());
-        match(KW_FI);
+        if(!match(KW_FI)){
+            throw new SyntaxException("");
+        }
         return e;
     }
     public Expr logicalOrExpr() throws SyntaxException, LexicalException{
@@ -237,7 +239,7 @@ public class Parser implements IParser {
         Expr left = null;
         Expr right = null;
         left = additiveExpr();
-        while(isKind(RARROW) || isKind(LARROW) || isKind(EQUALS) || isKind(NOT_EQUALS) || isKind(LE) || isKind(GE)){
+        while(isKind(LT) || isKind(GT) || isKind(EQUALS) || isKind(NOT_EQUALS) || isKind(LE) || isKind(GE)){
             Token op = currentToken;
             consume();
             right = additiveExpr();

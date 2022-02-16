@@ -494,4 +494,19 @@ class Assignment2StarterTests {
         });
         show(e);
     }
+
+    @DisplayName("testPixelError")
+    @Test
+    public void testPixelError(TestInfo testinfo) throws Exception{
+        String input = """
+      a[,
+      """;
+        show("-------------");
+        show(input);
+        Exception e = assertThrows(SyntaxException.class,() ->{
+            getAST(input);
+        });
+        show(e);
+    }
+
 }
