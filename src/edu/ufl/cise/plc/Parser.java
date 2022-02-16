@@ -75,22 +75,19 @@ public class Parser implements IParser {
     }
     
     public Expr expr() throws SyntaxException, LexicalException {
-        Token firstToken = currentToken;
-        Expr left = null;
-        Expr right = null;
-        Expr e = null;
+        Expr e;
         if (isKind(KW_IF)){
-            left = conditionExpr();
+            e = conditionExpr();
         }
         else{
-            left = logicalOrExpr();
+            e = logicalOrExpr();
         }
-        return left;
+        return e;
     }
 
     public Expr conditionExpr() throws SyntaxException, LexicalException{
         Token firstToken = currentToken;
-        Expr e = null;
+        Expr e;
         consume();
         match(LPAREN);
         Expr condition = expr();
@@ -106,8 +103,8 @@ public class Parser implements IParser {
 
     public Expr logicalOrExpr() throws SyntaxException, LexicalException{
         Token firstToken = currentToken;
-        Expr left = null;
-        Expr right = null;
+        Expr left;
+        Expr right;
         left = logicalAndExpr();
         while(isKind(OR)){
             Token op = currentToken;
@@ -120,8 +117,8 @@ public class Parser implements IParser {
 
     public Expr logicalAndExpr() throws SyntaxException, LexicalException{
         Token firstToken = currentToken;
-        Expr left = null;
-        Expr right = null;
+        Expr left;
+        Expr right;
         left = comparisonExpr();
         while(isKind(AND)){
             Token op = currentToken;
@@ -134,8 +131,8 @@ public class Parser implements IParser {
 
     public Expr comparisonExpr() throws SyntaxException, LexicalException{
         Token firstToken = currentToken;
-        Expr left = null;
-        Expr right = null;
+        Expr left;
+        Expr right;
         left = additiveExpr();
         while(isKind(LT) || isKind(GT) || isKind(EQUALS) || isKind(NOT_EQUALS) || isKind(LE) || isKind(GE)){
             Token op = currentToken;
@@ -148,8 +145,8 @@ public class Parser implements IParser {
 
     public Expr additiveExpr() throws SyntaxException, LexicalException{
         Token firstToken = currentToken;
-        Expr left = null;
-        Expr right = null;
+        Expr left;
+        Expr right;
         left = multiplicativeExpr();
         while(isKind(PLUS) || isKind(MINUS)){
             Token op = currentToken;
@@ -162,8 +159,8 @@ public class Parser implements IParser {
 
     public Expr multiplicativeExpr() throws SyntaxException, LexicalException{
         Token firstToken = currentToken;
-        Expr left = null;
-        Expr right = null;
+        Expr left;
+        Expr right;
         left = UnaryExpr();
         while(isKind(TIMES) || isKind(DIV) || isKind(MOD)){
             Token op = currentToken;
@@ -176,7 +173,7 @@ public class Parser implements IParser {
 
     public Expr UnaryExpr() throws SyntaxException, LexicalException{
         Token firstToken = currentToken;
-        Expr e = null;
+        Expr e;
         if (isKind(BANG) || isKind(MINUS) || isKind(COLOR_OP) || isKind(IMAGE_OP)){
             Token op = currentToken;
             consume();
@@ -191,7 +188,7 @@ public class Parser implements IParser {
 
     public Expr UnaryExprPostfix() throws SyntaxException, LexicalException{
         Token firstToken = currentToken;
-        Expr e = null;
+        Expr e;
         if (isKind(BOOLEAN_LIT)){
             e = new BooleanLitExpr(firstToken);
             consume();
