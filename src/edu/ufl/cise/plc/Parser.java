@@ -80,7 +80,8 @@ public class Parser implements IParser {
 //        catch (Exception e) {
 //            return null;
 //        }
-        AST = expr();
+        //AST = expr();
+        AST = exprNew();
         return AST;
     }
 
@@ -149,7 +150,9 @@ public class Parser implements IParser {
         else if (isKind(KW_IF)){
             IToken current = firstToken;
             consume();
+            match(LPAREN);
             Expr condition = expr();
+            match(RPAREN);
             Expr trueCase = expr();
             match(KW_ELSE);
             e = new ConditionalExpr(current, condition, trueCase, expr());
@@ -169,6 +172,139 @@ public class Parser implements IParser {
             else{
                 throw new SyntaxException("");
             }
+        }
+        return e;
+    }
+
+
+    /*=== Restructure ===*/
+
+    public Expr exprNew() throws SyntaxException, LexicalException {
+        Token firstToken = currentToken;
+        Expr left = null;
+        Expr right = null;
+        Expr e = null;
+        if (isKind(KW_IF)){
+            left = conditionExpr();
+        }
+        else{
+            left = logicalOrExpr();
+        }
+        return left;
+    }
+    public Expr conditionExpr() throws SyntaxException, LexicalException{
+        Token firstToken = currentToken;
+        Expr e = null;
+        consume();
+        Expr condition = exprNew();
+        Expr trueCase = exprNew();
+        match(KW_ELSE);
+        e = new ConditionalExpr(firstToken, condition, trueCase, expr());
+        match(KW_FI);
+        return e;
+    }
+    public Expr logicalOrExpr() throws SyntaxException, LexicalException{
+        Token firstToken = currentToken;
+        Expr left = null;
+        Expr right = null;
+        left = logicalAndExpr();
+        while(isKind(OR)){
+            Token op = currentToken;
+            consume();
+            right = logicalAndExpr();
+            left = new BinaryExpr(firstToken, left, op, right);
+        }
+        return left;
+    }
+    public Expr logicalAndExpr() throws SyntaxException, LexicalException{
+        Token firstToken = currentToken;
+        Expr left = null;
+        Expr right = null;
+        left = comparisonExpr();
+        while(isKind(AND)){
+            Token op = currentToken;
+            consume();
+            right = comparisonExpr();
+            left = new BinaryExpr(firstToken, left, op, right);
+        }
+        return left;
+    }
+    public Expr comparisonExpr() throws SyntaxException, LexicalException{
+        Token firstToken = currentToken;
+        Expr left = null;
+        Expr right = null;
+        left = additiveExpr();
+        while(isKind(RARROW) || isKind(LARROW) || isKind(EQUALS) || isKind(NOT_EQUALS) || isKind(LE) || isKind(GE)){
+            Token op = currentToken;
+            consume();
+            right = additiveExpr();
+            left = new BinaryExpr(firstToken, left, op, right);
+        }
+        return left;
+    }
+    public Expr additiveExpr() throws SyntaxException, LexicalException{
+        Token firstToken = currentToken;
+        Expr left = null;
+        Expr right = null;
+        left = multiplicativeExpr();
+        while(isKind(PLUS) || isKind(MINUS)){
+            Token op = currentToken;
+            consume();
+            right = multiplicativeExpr();
+            left = new BinaryExpr(firstToken, left, op, right);
+        }
+        return left;
+    }
+    public Expr multiplicativeExpr() throws SyntaxException, LexicalException{
+        Token firstToken = currentToken;
+        Expr left = null;
+        Expr right = null;
+        left = UnaryExpr();
+        while(isKind(TIMES) || isKind(DIV) || isKind(MOD)){
+            Token op = currentToken;
+            consume();
+            right = UnaryExpr();
+            left = new BinaryExpr(firstToken, left, op, right);
+        }
+        return left;
+    }
+    public Expr UnaryExpr() throws SyntaxException, LexicalException{
+        Token firstToken = currentToken;
+        Expr e = null;
+        if (isKind(BANG) || isKind(MINUS) || isKind(COLOR_OP) || isKind(IMAGE_OP)){
+            Token op = currentToken;
+            e = new UnaryExpr(firstToken, op, null);
+        }
+        else{
+            e = UnaryExprPostfix();
+        }
+        return e;
+    }
+    public Expr UnaryExprPostfix() throws SyntaxException, LexicalException{
+        Token firstToken = currentToken;
+        Expr e = null;
+        if (isKind(BOOLEAN_LIT)){
+            e = new BooleanLitExpr(firstToken);
+            consume();
+        }
+        else if (isKind(STRING_LIT)){
+            e = new StringLitExpr(firstToken);
+            consume();
+        }
+        else if (isKind(INT_LIT)){
+            e = new IntLitExpr(firstToken);
+        }
+        else if (isKind(FLOAT_LIT)){
+            e = new FloatLitExpr(firstToken);
+            consume();
+        }
+        else if (isKind(IDENT)){
+            e = new IdentExpr(firstToken);
+            consume();
+        }
+        else if (isKind(LPAREN)){
+            e = exprNew();
+            match(RPAREN);
         }
         return e;
     }
