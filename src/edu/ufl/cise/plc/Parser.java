@@ -14,8 +14,9 @@ public class Parser implements IParser {
     private int current = 0;
     public Token currentToken;
     public Token t;
-
+    public ILexer lexer;
     Parser(List<Token> tokens) {
+
         this.tokens = tokens;
         currentToken = tokens.get(0);
         t = tokens.get(0);
@@ -72,7 +73,7 @@ public class Parser implements IParser {
     public ASTNode parse() throws PLCException {
         ASTNode AST;
         try {
-         AST = Expression();
+         AST = expr();
         }
         catch (Exception e) {
             return null;
@@ -140,6 +141,10 @@ public class Parser implements IParser {
             e = new FloatLitExpr(firstToken);
             consume();
         }
+        else if (isKind(IDENT)){
+            e = new IdentExpr(firstToken);
+            consume();
+        }
         else {
             throw new LexicalException("");
         }
@@ -147,97 +152,97 @@ public class Parser implements IParser {
     }
 
 
-    public void ConditionalExpression() {
-        if (isKind(KW_IF)) {
-            consume();
-        } else {
-            // return an error
-        }
-        if (isKind(LPAREN)) {
-            consume();
-            //
-        } else {
-            // return an err
-        }
-        Expression();
-        if (isKind(RPAREN)) {
-            consume();
-        }
-
-        Expression();
-
-        if (isKind(KW_ELSE)) {
-            consume();
-        }
-        else {
-            // return an error
-        }
-
-        Expression();
-
-        if(isKind(KW_FI)) {
-            consume();
-        }
-
-        return;
-
-
-    }
-
-    public Expr LogicalOrExpression() {
-        LogicalAndExpression();
-        if(isKind(OR)) {
-            while (isKind(OR)) {
-                consume();
-                LogicalAndExpression();
-            }
-        }
-    }
-
+//    public void ConditionalExpression() {
+//        if (isKind(KW_IF)) {
+//            consume();
+//        } else {
+//            // return an error
+//        }
+//        if (isKind(LPAREN)) {
+//            consume();
+//            //
+//        } else {
+//            // return an err
+//        }
+//        Expression();
+//        if (isKind(RPAREN)) {
+//            consume();
+//        }
 //
-//    ComparisonExpr ::=
-//    AdditiveExpr ( ('<' | '>' | '==' | '!=' | '<=' | '>=') AdditiveExpr)*
-
-    public Expr ComparisonExpression() {
-
-        AdditiveExpression();
-        if(isKind(LANGLE, RANGLE, EQUALS, NOT_EQUALS, GE, LE)){
-            while(isKind(LANGLE, RANGLE, EQUALS, NOT_EQUALS, GE, LE)) {
-                consume();
-                AdditiveExpression();
-            }
-        } else {
-            // err
-            return  null;
-        }
-        return null;
-    }
-
-     public Expr LogicalAndExpression() {
-        ComparisonExpression();
-         if(isKind(AND)) {
-             while (isKind(AND)) {
-                 consume();
-                 ComparisonExpression();
-             }
-         } else {
-
-         }
-
-     }
-    public Expr AdditiveExpression() {
-
-        }
-    public Expr MultiplicativeExpression() {
-
-        }
-    public Expr UnaryExpression() {
-
-        }
-    public Expr PrimaryExpression() {
-
-        }
-    public Expr PixelSelector() {
-
-        }
+//        Expression();
+//
+//        if (isKind(KW_ELSE)) {
+//            consume();
+//        }
+//        else {
+//            // return an error
+//        }
+//
+//        Expression();
+//
+//        if(isKind(KW_FI)) {
+//            consume();
+//        }
+//
+//        return;
+//
+//
+//    }
+//
+//    public Expr LogicalOrExpression() {
+//        LogicalAndExpression();
+//        if(isKind(OR)) {
+//            while (isKind(OR)) {
+//                consume();
+//                LogicalAndExpression();
+//            }
+//        }
+//    }
+//
+////
+////    ComparisonExpr ::=
+////    AdditiveExpr ( ('<' | '>' | '==' | '!=' | '<=' | '>=') AdditiveExpr)*
+//
+//    public Expr ComparisonExpression() {
+//
+//        AdditiveExpression();
+//        if(isKind(LANGLE, RANGLE, EQUALS, NOT_EQUALS, GE, LE)){
+//            while(isKind(LANGLE, RANGLE, EQUALS, NOT_EQUALS, GE, LE)) {
+//                consume();
+//                AdditiveExpression();
+//            }
+//        } else {
+//            // err
+//            return  null;
+//        }
+//        return null;
+//    }
+//
+//     public Expr LogicalAndExpression() {
+//        ComparisonExpression();
+//         if(isKind(AND)) {
+//             while (isKind(AND)) {
+//                 consume();
+//                 ComparisonExpression();
+//             }
+//         } else {
+//
+//         }
+//
+//     }
+//    public Expr AdditiveExpression() {
+//
+//        }
+//    public Expr MultiplicativeExpression() {
+//
+//        }
+//    public Expr UnaryExpression() {
+//
+//        }
+//    public Expr PrimaryExpression() {
+//
+//        }
+//    public Expr PixelSelector() {
+//
+//        }
 }
