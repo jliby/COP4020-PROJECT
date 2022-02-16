@@ -14,9 +14,8 @@ public class Parser implements IParser {
     private int current = 0;
     public Token currentToken;
     public Token t;
-    public ILexer lexer;
-    Parser(List<Token> tokens) {
 
+    Parser(List<Token> tokens) {
         this.tokens = tokens;
         currentToken = tokens.get(0);
         t = tokens.get(0);
@@ -28,7 +27,10 @@ public class Parser implements IParser {
         return peek().type == type;
     }
     private Token consume() {
-        if (!isAtEnd()) current++;
+        if (!isAtEnd()){
+            current++;
+            currentToken = tokens.get(current);
+        }
         return previous();
     }
     // Consume advances to the next token
@@ -72,26 +74,27 @@ public class Parser implements IParser {
     @Override
     public ASTNode parse() throws PLCException {
         ASTNode AST;
-        try {
-         AST = expr();
-        }
-        catch (Exception e) {
-            return null;
-        }
+//        try {
+//         AST = expr();
+//        }
+//        catch (Exception e) {
+//            return null;
+//        }
+        AST = expr();
         return AST;
     }
 
-    public Expr expr() throws LexicalException{
+    public Expr expr() throws SyntaxException, LexicalException {
         Token firstToken = currentToken;
         Expr left = null;
         Expr right = null;
         left = term();
         while (isKind(PLUS) || isKind(MINUS)){
             IToken op = firstToken;
-            consume();
+            firstToken = consume();
             right = term();
             left = new BinaryExpr(firstToken, left, op, right);
-            consume();
+            firstToken = currentToken;
         }
         return left;
 
@@ -102,22 +105,22 @@ public class Parser implements IParser {
 //        }
 
     }
-    public Expr term() throws LexicalException {
+    public Expr term() throws SyntaxException, LexicalException {
         Token firstToken = currentToken;
         Expr left = null;
         Expr right = null;
         left = factor();
         while(isKind(TIMES) || isKind(DIV)){
             IToken op = firstToken;
-            consume();
+            firstToken = consume();
             right = factor();
             left = new BinaryExpr(firstToken, left, op, right);
-            consume();
+            firstToken = currentToken;
         }
         return left;
     }
 
-    public Expr factor() throws LexicalException {
+    public Expr factor() throws SyntaxException, LexicalException {
         IToken firstToken = currentToken;
         Expr e = null;
         if(isKind(INT_LIT)){
@@ -145,8 +148,29 @@ public class Parser implements IParser {
             e = new IdentExpr(firstToken);
             consume();
         }
+        else if (isKind(KW_IF)){
+            IToken current = firstToken;
+            consume();
+            Expr condition = expr();
+            Expr trueCase = expr();
+            match(KW_ELSE);
+            e = new ConditionalExpr(current, condition, trueCase, expr());
+            match(KW_IF);
+        }
+        else if (isKind(BANG)|| isKind(MINUS) || isKind(COLOR_OP) || isKind(IMAGE_OP))
+        {
+            IToken op = firstToken;
+            consume();
+            Expr right = expr();
+            e = new UnaryExpr(op, op, right);
+        }
         else {
-            throw new LexicalException("");
+            if (isKind(ERROR)){
+                throw new LexicalException("");
+            }
+            else{
+                throw new SyntaxException("");
+            }
         }
         return e;
     }
