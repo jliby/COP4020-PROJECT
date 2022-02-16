@@ -273,7 +273,9 @@ public class Parser implements IParser {
         Expr e = null;
         if (isKind(BANG) || isKind(MINUS) || isKind(COLOR_OP) || isKind(IMAGE_OP)){
             Token op = currentToken;
-            e = new UnaryExpr(firstToken, op, null);
+            consume();
+            Expr unaryExpr = exprNew();
+            e = new UnaryExpr(firstToken, op, unaryExpr);
         }
         else{
             e = UnaryExprPostfix();
