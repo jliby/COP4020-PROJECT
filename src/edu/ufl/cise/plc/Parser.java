@@ -14,6 +14,7 @@ public class Parser implements IParser {
     private int current = 0;
     public Token currentToken;
     public Token t;
+    ASTNode AST;
 
     Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -73,7 +74,7 @@ public class Parser implements IParser {
     }
     @Override
     public ASTNode parse() throws PLCException {
-        ASTNode AST;
+        //ASTNode AST;
 //        try {
 //         AST = expr();
 //        }
@@ -315,6 +316,15 @@ public class Parser implements IParser {
         }
         else{
             throw new SyntaxException("");
+        }
+        if(isKind(LSQUARE)){
+            consume();
+            Expr e1 = exprNew();
+            match(COMMA);
+            Expr e2 = exprNew();
+            match(RSQUARE);
+            PixelSelector pixelSel = new PixelSelector(firstToken, e1, e2);
+            e = new UnaryExprPostfix(firstToken, e, pixelSel);
         }
         return e;
     }
