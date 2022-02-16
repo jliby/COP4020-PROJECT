@@ -90,11 +90,10 @@ public class Parser implements IParser {
         Expr right = null;
         left = term();
         while (isKind(PLUS) || isKind(MINUS)){
-            IToken op = firstToken;
+            IToken op = currentToken;
             firstToken = consume();
             right = term();
             left = new BinaryExpr(firstToken, left, op, right);
-            firstToken = currentToken;
         }
         return left;
 
@@ -111,11 +110,10 @@ public class Parser implements IParser {
         Expr right = null;
         left = factor();
         while(isKind(TIMES) || isKind(DIV)){
-            IToken op = firstToken;
+            IToken op = currentToken;
             firstToken = consume();
             right = factor();
             left = new BinaryExpr(firstToken, left, op, right);
-            firstToken = currentToken;
         }
         return left;
     }
@@ -155,7 +153,7 @@ public class Parser implements IParser {
             Expr trueCase = expr();
             match(KW_ELSE);
             e = new ConditionalExpr(current, condition, trueCase, expr());
-            match(KW_IF);
+            match(KW_FI);
         }
         else if (isKind(BANG)|| isKind(MINUS) || isKind(COLOR_OP) || isKind(IMAGE_OP))
         {
