@@ -1,11 +1,6 @@
 package edu.ufl.cise.plc.test;
 
-import static edu.ufl.cise.plc.IToken.Kind.AND;
-import static edu.ufl.cise.plc.IToken.Kind.BANG;
-import static edu.ufl.cise.plc.IToken.Kind.COLOR_OP;
-import static edu.ufl.cise.plc.IToken.Kind.MINUS;
-import static edu.ufl.cise.plc.IToken.Kind.PLUS;
-import static edu.ufl.cise.plc.IToken.Kind.TIMES;
+import static edu.ufl.cise.plc.IToken.Kind.*;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -332,6 +327,169 @@ class Assignment2StarterTests {
         show("-------------");
         show(input);
         Exception e = assertThrows(LexicalException.class, () -> {
+            getAST(input);
+        });
+        show(e);
+    }
+
+    @DisplayName("testEOF")
+    @Test
+    public void testEOF(TestInfo testinfo) throws Exception{
+        String input = """
+        x +
+        """;
+        show("-------------");
+        show(input);
+        Exception e =assertThrows(SyntaxException.class,() ->{
+            getAST(input);
+        });
+        show(e);
+    }
+
+    public void invalidConditionalChecker(String input) throws Exception{
+        show("-------------");
+        show(input);
+        Exception e =assertThrows(SyntaxException.class,() ->{
+            getAST(input);
+        });
+        show(e);
+    }
+
+    @DisplayName("testInvalidConditional1")
+    @Test
+    public void testInvalidConditional1(TestInfo testInfo)throws Exception{
+
+        String input = """
+        if (
+        """;
+        invalidConditionalChecker(input);
+
+        String input2 = """
+        if (b
+        """;
+        invalidConditionalChecker(input2);
+
+        String input3 = """
+        if (b)
+        """;
+        invalidConditionalChecker(input3);
+
+        String input4 = """
+        if (b) x
+        """;
+        invalidConditionalChecker(input4);
+
+        String input5 = """
+        if (b) x else
+        """;
+        invalidConditionalChecker(input5);
+
+        String input6 = """
+        if (b) x else
+        """;
+        invalidConditionalChecker(input6);
+
+        String input7 = """
+        if (b) x else y
+        """;
+        invalidConditionalChecker(input7);
+
+        String input8 = """
+        if (b) x else y test
+        """;
+        invalidConditionalChecker(input8);
+
+
+    }
+
+    @DisplayName("triple_if")
+    @Test
+    public void triple_if(TestInfo testInfo) throws Exception {
+        String input = """
+        if (a < b)
+           if (l > s)
+              if (le == us)
+                 v
+              else
+                 o
+              fi
+           else
+              z
+           fi
+        else
+           c
+        fi
+        """;
+        show("-------------");
+        show(input);
+        Expr ast = (Expr) getAST(input);
+        show(ast);
+        assertThat("", ast, instanceOf(ConditionalExpr.class));
+
+        Expr var17 = ((ConditionalExpr) ast).getCondition();
+        assertThat("", var17, instanceOf(BinaryExpr.class));
+        assertEquals(LT, ((BinaryExpr) var17).getOp().getKind());
+
+        Expr var18 = ((BinaryExpr) var17).getLeft();
+        assertThat("", var18, instanceOf(IdentExpr.class));
+        assertEquals("a", var18.getText());
+
+        Expr var19 = ((BinaryExpr) var17).getRight();
+        assertThat("", var19, instanceOf(IdentExpr.class));
+        assertEquals("b", var19.getText());
+
+        Expr var20 = ((ConditionalExpr) ast).getTrueCase();
+        assertThat("", var20, instanceOf(ConditionalExpr.class));
+
+        Expr var25 = ((ConditionalExpr) var20).getCondition();
+        assertThat("", var25, instanceOf(BinaryExpr.class));
+        assertEquals(GT, ((BinaryExpr) var25).getOp().getKind());
+
+        Expr var26 = ((BinaryExpr) var25).getLeft();
+        assertThat("", var26, instanceOf(IdentExpr.class));
+        assertEquals("l", var26.getText());
+
+        Expr var27 = ((BinaryExpr) var25).getRight();
+        assertThat("", var27, instanceOf(IdentExpr.class));
+        assertEquals("s", var27.getText());
+
+        Expr var28 = ((ConditionalExpr) var20).getTrueCase();
+        assertThat("", var28, instanceOf(ConditionalExpr.class));
+
+        Expr var29 = ((ConditionalExpr) var28).getCondition();
+        assertThat("", var29, instanceOf(BinaryExpr.class));
+
+        assertEquals(EQUALS, ((BinaryExpr) var29).getOp().getKind());
+
+        Expr var30 = ((BinaryExpr) var29).getLeft();
+        assertThat("", var30, instanceOf(IdentExpr.class));
+        assertEquals("le", var30.getText());
+
+        Expr var31 = ((BinaryExpr) var29).getRight();
+        assertThat("", var31, instanceOf(IdentExpr.class));
+        assertEquals("us", var31.getText());
+
+        Expr var22 = ((ConditionalExpr) var20).getTrueCase();
+        assertThat("", var22, instanceOf(ConditionalExpr.class));
+
+        Expr var23 = ((ConditionalExpr) var20).getFalseCase();
+        assertThat("", var23, instanceOf(IdentExpr.class));
+        assertEquals("z", var23.getText());
+
+        Expr var24 = ((ConditionalExpr) ast).getFalseCase();
+        assertThat("", var24, instanceOf(IdentExpr.class));
+        assertEquals("c", var24.getText());
+    }
+
+    @DisplayName("no input")
+    @Test
+    public void nada(TestInfo testInfo) throws Exception   {
+        String input = """
+       
+        """;
+        show("-------------");
+        show(input);
+        Exception e = assertThrows(SyntaxException.class, () -> {
             getAST(input);
         });
         show(e);
