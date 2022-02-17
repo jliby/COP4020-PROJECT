@@ -901,13 +901,12 @@ class Assignment2StarterTests {
     @Test
     public void test_eof(TestInfo testInfo) throws Exception{
         String input = """
-                1 1
-                """;
+              1 1
+              """;
         show("-------------");
         show(input);
-        Exception e =assertThrows(SyntaxException.class,() ->{
-            getAST(input);
-        });
-        show(e);
+        Expr ast = (Expr) getAST(input);
+        assertThat("", ast, instanceOf(IntLitExpr.class));
     }
+
 }
