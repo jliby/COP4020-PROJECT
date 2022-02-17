@@ -29,8 +29,9 @@ public class Parser implements IParser {
     }
     
     // Consume advances to the next token
-    private Token consume() {
+    private Token consume() throws PLCException{
         if (!isAtEnd()){
+            lexer.next();
             current++;
             currentToken = tokens.get(current);
         }
@@ -62,7 +63,7 @@ public class Parser implements IParser {
         return false;
     }
 
-    private boolean match(Token.Kind... types) {
+    private boolean match(Token.Kind... types) throws PLCException{
         for (Token.Kind type : types) {
             if (check(type)) {
                 consume();
@@ -93,18 +94,13 @@ public class Parser implements IParser {
         Token firstToken = currentToken;
         Expr e;
         consume();
-        lexer.next();
         match(LPAREN);
-        lexer.next();
         Expr condition = expr();
         match(RPAREN);
-        lexer.next();
         Expr trueCase = expr();
         match(KW_ELSE);
-        lexer.next();
         e = new ConditionalExpr(firstToken, condition, trueCase, expr());
         if(!match(KW_FI)){
-            lexer.next();
             throw new SyntaxException("");
         }
         return e;
@@ -118,7 +114,6 @@ public class Parser implements IParser {
         while(isKind(OR)){
             Token op = currentToken;
             consume();
-            lexer.next();
             right = logicalAndExpr();
             left = new BinaryExpr(firstToken, left, op, right);
         }
@@ -133,7 +128,6 @@ public class Parser implements IParser {
         while(isKind(AND)){
             Token op = currentToken;
             consume();
-            lexer.next();
             right = comparisonExpr();
             left = new BinaryExpr(firstToken, left, op, right);
         }
@@ -148,7 +142,6 @@ public class Parser implements IParser {
         while(isKind(LT) || isKind(GT) || isKind(EQUALS) || isKind(NOT_EQUALS) || isKind(LE) || isKind(GE)){
             Token op = currentToken;
             consume();
-            lexer.next();
             right = additiveExpr();
             left = new BinaryExpr(firstToken, left, op, right);
         }
@@ -163,7 +156,6 @@ public class Parser implements IParser {
         while(isKind(PLUS) || isKind(MINUS)){
             Token op = currentToken;
             consume();
-            lexer.next();
             right = multiplicativeExpr();
             left = new BinaryExpr(firstToken, left, op, right);
         }
@@ -178,7 +170,6 @@ public class Parser implements IParser {
         while(isKind(TIMES) || isKind(DIV) || isKind(MOD)){
             Token op = currentToken;
             consume();
-            lexer.next();
             right = UnaryExpr();
             left = new BinaryExpr(firstToken, left, op, right);
         }
@@ -191,7 +182,6 @@ public class Parser implements IParser {
         if (isKind(BANG) || isKind(MINUS) || isKind(COLOR_OP) || isKind(IMAGE_OP)){
             Token op = currentToken;
             consume();
-            lexer.next();
             Expr unaryExpr = expr();
             e = new UnaryExpr(firstToken, op, unaryExpr);
         }
@@ -207,49 +197,39 @@ public class Parser implements IParser {
         if (isKind(BOOLEAN_LIT)){
             e = new BooleanLitExpr(firstToken);
             consume();
-            lexer.next();
         }
         else if (isKind(STRING_LIT)){
             e = new StringLitExpr(firstToken);
             consume();
-            lexer.next();
         }
         else if (isKind(INT_LIT)){
             e = new IntLitExpr(firstToken);
             consume();
-            lexer.next();
         }
         else if (isKind(FLOAT_LIT)){
             e = new FloatLitExpr(firstToken);
             consume();
-            lexer.next();
         }
         else if (isKind(IDENT)){
             e = new IdentExpr(firstToken);
             consume();
-            lexer.next();
         }
         else if (isKind(LPAREN)){
             e = expr();
             match(RPAREN);
-            lexer.next();
         }
         else{
             if(!isAtEnd()){
                 consume();
-                lexer.next();
             }
             throw new SyntaxException("");
         }
         if(isKind(LSQUARE)){
             consume();
-            lexer.next();
             Expr e1 = expr();
             match(COMMA);
-            lexer.next();
             Expr e2 = expr();
             match(RSQUARE);
-            lexer.next();
             PixelSelector pixelSel = new PixelSelector(firstToken, e1, e2);
             e = new UnaryExprPostfix(firstToken, e, pixelSel);
         }
