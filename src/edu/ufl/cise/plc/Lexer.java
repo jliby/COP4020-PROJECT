@@ -62,7 +62,7 @@ public class Lexer implements ILexer {
     int column = -1;
 
     String source = "";
-    List<Token> tokens = new ArrayList<>();
+    public List<Token> tokens = new ArrayList<>();
 
     Lexer(String source) {
         this.source = source;
