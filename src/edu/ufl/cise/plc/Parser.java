@@ -215,6 +215,7 @@ public class Parser implements IParser {
             consume();
         }
         else if (isKind(LPAREN)){
+            consume();
             e = expr();
             match(RPAREN);
         }

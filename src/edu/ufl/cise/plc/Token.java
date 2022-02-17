@@ -1,5 +1,7 @@
 package edu.ufl.cise.plc;
 
+import java.util.Objects;
+
 class Token implements IToken {
 
     public Kind type;
@@ -47,7 +49,7 @@ class Token implements IToken {
 
     @Override
     public boolean getBooleanValue() {
-        if (literal == "false") {
+        if (Objects.equals(literal, "false")) {
             return false;
         } else {
             return true;
