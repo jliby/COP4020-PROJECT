@@ -12,7 +12,6 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
 public class LexerTests {
 
 	ILexer getLexer(String input){
@@ -1139,5 +1138,18 @@ public class LexerTests {
 		checkToken(lexer.next(), Kind.IDENT, 3, 1, "getRED");
 		checkToken(lexer.next(), Kind.PLUS, 3, 7, "+");
 		checkToken(lexer.next(), Kind.IDENT, 3, 8, "getBLUE");
+	}
+
+	@Test
+	void testIllegalEscape1() throws LexicalException
+	{
+		String input = """
+				"abc\\g xyz"
+				""";
+		show(input);
+		ILexer lexer = getLexer(input);
+		Exception e = assertThrows(LexicalException.class, () -> {
+			lexer.next();
+		});
 	}
 }

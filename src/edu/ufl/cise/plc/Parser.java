@@ -3,27 +3,26 @@ import edu.ufl.cise.plc.ast.*;
 import java.util.List;
 import static edu.ufl.cise.plc.IToken.Kind.*;
 
-public class Parser implements IParser {
+public class Parser implements IParser{
 
-    // tokens list
+    /*=== CLASS VARIABLES ===*/
     private final List<Token> tokens;
     private int current = 0;
-
-    Lexer lexer = new Lexer("");
-
     public Token currentToken;
     public Token t;
+    Lexer lexer = new Lexer("");
     ASTNode AST;
 
-    Parser(List<Token> tokens) {
+    //Constructor
+    Parser(List<Token> tokens){
         this.tokens = tokens;
         this.lexer.tokens = tokens;
         currentToken = tokens.get(0);
         t = tokens.get(0);
     }
 
-    // helper functions for tokens list
-    private boolean check(Token.Kind type) {
+    /*=== HELPER FUNCTIONS ===*/
+    private boolean check(Token.Kind type){
         if (isAtEnd()) return false;
         return peek().type == type;
     }
@@ -38,34 +37,9 @@ public class Parser implements IParser {
         return previous();
     }
 
-    private boolean isAtEnd() {
-        return peek().type == EOF;
-    }
-
-    private Token peek() {
-        return tokens.get(current);
-    }
-
-    private Token previous() {
-        return tokens.get(current - 1);
-    }
-
-    protected boolean isKind(Token.Kind kind) {
-        return currentToken.type == kind;
-    }
-
-    protected boolean isKind(Token.Kind... kinds) {
-        for (Token.Kind k: kinds) {
-            if (k== currentToken.type) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean match(Token.Kind... types) throws PLCException{
-        for (Token.Kind type : types) {
-            if (check(type)) {
+        for (Token.Kind type : types){
+            if (check(type)){
                 consume();
                 return true;
             }
@@ -73,13 +47,40 @@ public class Parser implements IParser {
         return false;
     }
 
+    private boolean isAtEnd(){
+        return peek().type == EOF;
+    }
+
+    private Token peek(){
+        return tokens.get(current);
+    }
+
+    private Token previous(){
+        return tokens.get(current - 1);
+    }
+
+    protected boolean isKind(Token.Kind kind){
+        return currentToken.type == kind;
+    }
+
+    protected boolean isKind(Token.Kind... kinds){
+        for (Token.Kind k: kinds){
+            if (k== currentToken.type){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     @Override
-    public ASTNode parse() throws PLCException {
+    public ASTNode parse() throws PLCException{
         AST = expr();
         return AST;
     }
-    
-    public Expr expr() throws PLCException {
+
+    /*=== GRAMMAR RULE FUNCTIONS ===*/
+    public Expr expr() throws PLCException{
         Expr e;
         if (isKind(KW_IF)){
             e = conditionExpr();

@@ -909,4 +909,48 @@ class Assignment2StarterTests {
         assertThat("", ast, instanceOf(IntLitExpr.class));
     }
 
+    @DisplayName("leftAssociativity")
+    @Test
+    public void leftAssociative(TestInfo testInfo) throws Exception {
+        String input = """
+			3 + 4 + 5
+			""";
+        show("-------------");
+        show(input);
+        Expr ast = (Expr) getAST(input);
+        show(ast);
+        assertThat("", ast, instanceOf(BinaryExpr.class));
+        assertEquals(PLUS, ((BinaryExpr) ast).getOp().getKind());
+
+        Expr leftPair = ((BinaryExpr) ast).getLeft();
+        assertThat("", leftPair , instanceOf(BinaryExpr.class));
+
+        Expr right = ((BinaryExpr) ast).getRight();
+        assertThat("", right, instanceOf(IntLitExpr.class));
+    }
+
+    @DisplayName("complex_unary")
+    @Test
+    public void complex_unary(TestInfo testInfo) throws Exception{
+        String input = """
+              true[3,getWidth true]  < 9 | x != e & i
+              """;
+        //[(8 < 9)] | [(x != e) & i]
+        show("-------------");
+        show(input);
+        Expr ast = (Expr) getAST(input);
+        show(ast);
+        assertThat("", ast, instanceOf(BinaryExpr.class));
+        assertEquals(OR, ((BinaryExpr) ast).getOp().getKind());
+
+        Expr left1 = ((BinaryExpr) ast).getLeft();
+        assertEquals(LT, ((BinaryExpr) left1).getOp().getKind());
+
+        Expr right1 = ((BinaryExpr) ast).getRight();
+        assertEquals(AND, ((BinaryExpr) right1).getOp().getKind());
+
+        Expr final_ = ((BinaryExpr) right1).getLeft();
+        assertEquals(NOT_EQUALS, ((BinaryExpr) final_).getOp().getKind());
+
+    }
 }
