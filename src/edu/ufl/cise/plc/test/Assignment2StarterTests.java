@@ -953,4 +953,44 @@ class Assignment2StarterTests {
         assertEquals(NOT_EQUALS, ((BinaryExpr) final_).getOp().getKind());
 
     }
+
+    @DisplayName("unaryAddition")
+    @Test
+    public void unaryAddition(TestInfo testInfo) throws Exception {
+        String input = """
+			getRed a + b
+			""";
+        show("-------------");
+        show(input);
+        Expr ast = (Expr) getAST(input);
+        show(ast);
+        assertThat("", ast, instanceOf(BinaryExpr.class));
+        assertEquals(PLUS, ((BinaryExpr) ast).getOp().getKind());
+
+        Expr leftPair = ((BinaryExpr) ast).getLeft();
+        assertThat("", leftPair , instanceOf(UnaryExpr.class));
+
+        Expr right = ((BinaryExpr) ast).getRight();
+        assertThat("", right, instanceOf(IdentExpr.class));
+    }
+
+    @DisplayName("doubleUnaryAddition")
+    @Test
+    public void doubleUnaryAddition(TestInfo testInfo) throws Exception {
+        String input = """
+			getRed a + getGreen b
+			""";
+        show("-------------");
+        show(input);
+        Expr ast = (Expr) getAST(input);
+        show(ast);
+        assertThat("", ast, instanceOf(BinaryExpr.class));
+        assertEquals(PLUS, ((BinaryExpr) ast).getOp().getKind());
+
+        Expr leftPair = ((BinaryExpr) ast).getLeft();
+        assertThat("", leftPair , instanceOf(UnaryExpr.class));
+
+        Expr right = ((BinaryExpr) ast).getRight();
+        assertThat("", right, instanceOf(UnaryExpr.class));
+    }
 }

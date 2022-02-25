@@ -167,23 +167,23 @@ public class Parser implements IParser{
         Token firstToken = currentToken;
         Expr left;
         Expr right;
-        left = UnaryExpr();
+        left = unaryExpr();
         while(isKind(TIMES) || isKind(DIV) || isKind(MOD)){
             Token op = currentToken;
             consume();
-            right = UnaryExpr();
+            right = unaryExpr();
             left = new BinaryExpr(firstToken, left, op, right);
         }
         return left;
     }
 
-    public Expr UnaryExpr() throws PLCException{
+    public Expr unaryExpr() throws PLCException{
         Token firstToken = currentToken;
         Expr e;
         if (isKind(BANG) || isKind(MINUS) || isKind(COLOR_OP) || isKind(IMAGE_OP)){
             Token op = currentToken;
             consume();
-            Expr unaryExpr = expr();
+            Expr unaryExpr = unaryExpr();
             e = new UnaryExpr(firstToken, op, unaryExpr);
         }
         else{
