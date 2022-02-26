@@ -94,7 +94,7 @@ public class Lexer implements ILexer {
 
     public IToken next() throws LexicalException {
         IToken token = tokens.get(currentToken);
-            currentToken += 1;
+        currentToken += 1;
 
         if (token.getKind() == IToken.Kind.ERROR) {
             throw new LexicalException("test");
@@ -117,8 +117,8 @@ public class Lexer implements ILexer {
     }
 
     public char advance() {
-            current++;
-            return source.charAt(current - 1);
+        current++;
+        return source.charAt(current - 1);
     }
 
     public void identifier() {
@@ -274,13 +274,13 @@ public class Lexer implements ILexer {
             }
             else if(char_peek() == '\\'){
                 if (char_peekNext() == 'b' ||
-                char_peekNext() == 't' ||
-                char_peekNext() == 'n' ||
-                char_peekNext() == 'f' ||
-                char_peekNext() == 'r' ||
-                char_peekNext() == '"' ||
-                char_peekNext() == '\'' ||
-                char_peekNext() == '\\'){
+                        char_peekNext() == 't' ||
+                        char_peekNext() == 'n' ||
+                        char_peekNext() == 'f' ||
+                        char_peekNext() == 'r' ||
+                        char_peekNext() == '"' ||
+                        char_peekNext() == '\'' ||
+                        char_peekNext() == '\\'){
                     advance();
                     tempColumn++;
                 }
@@ -331,7 +331,7 @@ public class Lexer implements ILexer {
                 return null;
             }
         }
-            if (isFloat) {
+        if (isFloat) {
             try{
                 Float.parseFloat(source.substring(start, current));
             }
@@ -379,4 +379,3 @@ public class Lexer implements ILexer {
         return this.tokens;
     }
 }
-

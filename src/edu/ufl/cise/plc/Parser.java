@@ -79,6 +79,16 @@ public class Parser implements IParser{
         return AST;
     }
 
+
+
+//    New Grammar rules
+    public Expr Program() throws PLCException {
+
+    }
+
+
+    public NameDe
+
     /*=== GRAMMAR RULE FUNCTIONS ===*/
     public Expr expr() throws PLCException{
         Expr e;
