@@ -78,18 +78,21 @@ public class Parser implements IParser{
         AST = expr();
         return AST;
     }
-
-
-
-//    New Grammar rules
-    public Expr Program() throws PLCException {
-
+    
+    /*=== GRAMMAR RULE FUNCTIONS ===*/
+    public Expr program() throws PLCException {
+        return null;
     }
 
 
-    public NameDe
+    public Expr nameDef() throws PLCException{
+        return null;
+    }
 
-    /*=== GRAMMAR RULE FUNCTIONS ===*/
+    public Expr declaration() throws PLCException{
+        return null;
+    }
+
     public Expr expr() throws PLCException{
         Expr e;
         if (isKind(KW_IF)){
@@ -203,6 +206,12 @@ public class Parser implements IParser{
     }
 
     public Expr UnaryExprPostfix() throws PLCException{
+        //PrimaryExpr is called first and PixelSelector is called within it
+        Expr e = pixelSelector();
+        return e;
+    }
+
+    public Expr primaryExpr() throws PLCException{
         Token firstToken = currentToken;
         Expr e;
         if (isKind(BOOLEAN_LIT)){
@@ -230,12 +239,37 @@ public class Parser implements IParser{
             e = expr();
             match(RPAREN);
         }
+        else if (isKind(COLOR_CONST)){
+            e = new ColorConstExpr(firstToken);
+            consume();
+        }
+        else if (isKind(LANGLE)){
+            consume();
+            Expr red = expr();
+            match(COMMA);
+            Expr green = expr();
+            match(COMMA);
+            Expr blue = expr();
+            match(RANGLE);
+            e = new ColorExpr(firstToken, red, green, blue);
+        }
+        else if (isKind(KW_CONSOLE)){
+            e = new ConsoleExpr(firstToken);
+            consume();
+        }
         else{
             if(!isAtEnd()){
                 consume();
             }
             throw new SyntaxException("");
         }
+        return e;
+    }
+
+    public Expr pixelSelector() throws PLCException{
+        Token firstToken = currentToken;
+        //PrimaryExpr is called first
+        Expr e = primaryExpr();
         if(isKind(LSQUARE)){
             consume();
             Expr e1 = expr();
@@ -246,5 +280,13 @@ public class Parser implements IParser{
             e = new UnaryExprPostfix(firstToken, e, pixelSel);
         }
         return e;
+    }
+
+    public Expr dimension() throws PLCException{
+        return null;
+    }
+
+    public Expr statement() throws PLCException{
+        return null;
     }
 }
