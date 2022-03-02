@@ -37,14 +37,14 @@ public class Parser implements IParser{
         return previous();
     }
 
-    private boolean match(Token.Kind... types) throws PLCException{
+    private Token match(Token.Kind... types) throws PLCException{
         for (Token.Kind type : types){
             if (check(type)){
-                consume();
-                return true;
+                return consume();
             }
         }
-        return false;
+        //throw new SyntaxException("");
+        return null;
     }
 
     private boolean isAtEnd(){
@@ -78,9 +78,20 @@ public class Parser implements IParser{
         AST = expr();
         return AST;
     }
-    
+
     /*=== GRAMMAR RULE FUNCTIONS ===*/
-    public Expr program() throws PLCException {
+    public Program program() throws PLCException {
+        Token firstToken = currentToken;
+        Expr e = null;
+        Types.Type returnType = null;
+        String name = "";
+        if (isKind(TYPE) || isKind(KW_VOID)){
+            returnType = Types.Type.toType(firstToken.getText());
+        }
+        Token identToken = match(IDENT);
+        if (identToken != null){
+            name = identToken.getText();
+        }
         return null;
     }
 
@@ -114,7 +125,7 @@ public class Parser implements IParser{
         Expr trueCase = expr();
         match(KW_ELSE);
         e = new ConditionalExpr(firstToken, condition, trueCase, expr());
-        if(!match(KW_FI)){
+        if(match(KW_FI) == null){
             throw new SyntaxException("");
         }
         return e;
@@ -283,7 +294,18 @@ public class Parser implements IParser{
     }
 
     public Expr dimension() throws PLCException{
-        return null;
+        Token firstToken = currentToken;
+        Expr e = null;
+        if(isKind(LSQUARE)){
+            consume();
+            Expr e1 = expr();
+            match(COMMA);
+            Expr e2 = expr();
+            match(RSQUARE);
+            PixelSelector pixelSel = new PixelSelector(firstToken, e1, e2);
+            e = new UnaryExprPostfix(firstToken, e, pixelSel);
+        }
+        return e;
     }
 
     public Expr statement() throws PLCException{
