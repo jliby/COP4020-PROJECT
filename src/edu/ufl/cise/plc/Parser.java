@@ -122,7 +122,6 @@ public class Parser implements IParser{
                 Statement state = statement();
 
                 while (dec != null || state != null){
-                    consume();
                     if(dec != null){
                         decsAndStatements.add(dec);
                     }
@@ -130,8 +129,9 @@ public class Parser implements IParser{
                         decsAndStatements.add(state);
                     }
                     if(!isKind(SEMI)){
-                        break;
+                        throw new SyntaxException("");
                     }
+                    consume();
                     dec = declaration();
                     state = statement();
                 }
@@ -156,7 +156,6 @@ public class Parser implements IParser{
             else{
                 Dimension dim = dimension();
                 if (dim != null){
-                    consume();
                     name = match(IDENT);
                     if(name != null){
                         return new NameDefWithDim(firstToken, firstToken.getText(), name.getText(), dim);
@@ -397,7 +396,6 @@ public class Parser implements IParser{
 
         Token name = match(IDENT);
         if(name != null){
-            consume();
             PixelSelector pixelSelector = pixelSelector();
             if(match(ASSIGN) != null){
                 e = expr();
@@ -414,7 +412,7 @@ public class Parser implements IParser{
         else{
             if(match(KW_WRITE) != null){
                 Expr source = expr();
-                if(match(LARROW) != null){
+                if(match(RARROW) != null){
                     Expr dest = expr();
                     return new WriteStatement(firstToken, source, dest);
                 }
