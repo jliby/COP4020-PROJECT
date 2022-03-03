@@ -28,7 +28,7 @@ public class Parser implements IParser{
         if (isAtEnd()) return false;
         return peek().type == type;
     }
-    
+
     // Consume advances to the next token
     private Token consume() throws PLCException{
         if (!isAtEnd()){
@@ -73,7 +73,7 @@ public class Parser implements IParser{
         }
         return false;
     }
-
+    boolean reachedEndOfFunction = true;
 
     @Override
     public ASTNode parse() throws PLCException{
@@ -95,7 +95,6 @@ public class Parser implements IParser{
             returnType = Type.toType(firstToken.getText());
             consume();
             Token identToken = match(IDENT);
-
             if (identToken != null){
                 name = identToken.getText();
                 match(LPAREN);
@@ -131,9 +130,11 @@ public class Parser implements IParser{
                     consume();
                     dec = declaration();
                     state = statement();
+
                 }
                 return new Program(firstToken, returnType,name,params,decsAndStatements);
             }
+
             return new Program(firstToken, returnType, name, params, decsAndStatements);
         }
         else{
@@ -145,8 +146,10 @@ public class Parser implements IParser{
     public NameDef nameDef() throws PLCException{
         Token firstToken = currentToken;
         if(isKind(TYPE)){
+
             consume();
             Token name = match(IDENT);
+
             if(name != null){
                 return new NameDef(firstToken, firstToken.getText(), name.getText());
             }
@@ -159,7 +162,8 @@ public class Parser implements IParser{
                     }
                 }
                 else{
-                    return null;
+                    System.out.println(current);
+                    throw new SyntaxException("");
                 }
             }
         }
@@ -169,16 +173,20 @@ public class Parser implements IParser{
     public VarDeclaration declaration() throws PLCException{
         Token firstToken = currentToken;
         NameDef nameDef = nameDef();
+
         if (nameDef != null){
             if(isKind(ASSIGN) || isKind(LARROW)){
                 Token op = currentToken;
                 consume();
                 Expr e = expr();
                 return new VarDeclaration(firstToken, nameDef, op, e);
+
             }
             return new VarDeclaration(firstToken, nameDef, null, null);
         }
+
         return null;
+
     }
 
     public Expr expr() throws PLCException{
@@ -382,12 +390,13 @@ public class Parser implements IParser{
             match(RSQUARE);
             return new Dimension(firstToken, width, height);
         }
-        return null;
+        throw new SyntaxException("");
     }
 
     public Statement statement() throws PLCException{
         Token firstToken = currentToken;
         Expr e;
+
 
         Token name = match(IDENT);
         if(name != null){
@@ -421,8 +430,13 @@ public class Parser implements IParser{
                     return new ReturnStatement(firstToken, e);
                 }
                 else{
+                    if(reachedEndOfFunction == false) {
+                        reachedEndOfFunction = true;
+                        throw new SyntaxException("");
+                    }
                     return null;
                 }
+
             }
         }
     }

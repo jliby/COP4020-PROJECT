@@ -1153,3 +1153,4 @@ public class LexerTests {
 		});
 	}
 }
+
