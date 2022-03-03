@@ -1,9 +1,6 @@
 package edu.ufl.cise.plc;
 import edu.ufl.cise.plc.ast.*;
 import edu.ufl.cise.plc.ast.Types.*;
-
-import javax.swing.plaf.nimbus.State;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import static edu.ufl.cise.plc.IToken.Kind.*;
@@ -162,10 +159,8 @@ public class Parser implements IParser{
                     }
                 }
                 else{
-                    //throw new SyntaxException("");
                     return null;
                 }
-                //return new NameDefWithDim(firstToken, firstToken, currentToken, dimension());
             }
         }
         return null;
