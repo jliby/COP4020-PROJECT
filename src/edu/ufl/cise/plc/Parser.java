@@ -1,6 +1,10 @@
 package edu.ufl.cise.plc;
 import edu.ufl.cise.plc.ast.*;
 import edu.ufl.cise.plc.ast.Types.*;
+
+import javax.swing.plaf.nimbus.State;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import static edu.ufl.cise.plc.IToken.Kind.*;
 
@@ -76,7 +80,8 @@ public class Parser implements IParser{
 
     @Override
     public ASTNode parse() throws PLCException{
-        AST = expr();
+        //AST = expr();
+        AST = program();
         return AST;
     }
 
@@ -86,43 +91,101 @@ public class Parser implements IParser{
         Token firstToken = currentToken;
         Type returnType = null;
         String name = null;
-        List<NameDef> params = null;
-        List<ASTNode> decsAndStatements = null;
+        List<NameDef> params = new java.util.ArrayList<>(Collections.emptyList());
+        List<ASTNode> decsAndStatements = new java.util.ArrayList<>(Collections.emptyList());
 
         if (isKind(TYPE) || isKind(KW_VOID)){
             returnType = Type.toType(firstToken.getText());
-        }
+            consume();
+            Token identToken = match(IDENT);
 
-        Token identToken = match(IDENT);
-        if (identToken != null){
-            name = identToken.getText();
-        }
+            if (identToken != null){
+                name = identToken.getText();
+                match(LPAREN);
 
-        match(LPAREN);
-        while(match(COMMA) != null){
-            params.add(nameDef());
-        }
-        match(RPAREN);
+                NameDef nameDef = nameDef();
 
-        return new Program(firstToken, returnType, name, params, decsAndStatements);
+                if(nameDef != null){
+                    params.add(nameDef);
+                    consume();
+                    while(isKind(COMMA)){
+                        nameDef = nameDef();
+                        if(nameDef !=  null){
+                            params.add(nameDef);
+                            consume();
+                        }
+                    }
+                }
+
+                match(RPAREN);
+
+                Declaration dec = declaration();
+                Statement state = statement();
+
+                while (dec != null || state != null){
+                    consume();
+                    if(dec != null){
+                        decsAndStatements.add(dec);
+                    }
+                    else if (state != null){
+                        decsAndStatements.add(state);
+                    }
+                    if(!isKind(SEMI)){
+                        break;
+                    }
+                    consume();
+                    dec = declaration();
+                    state = statement();
+                }
+                return new Program(firstToken, returnType,name,params,decsAndStatements);
+            }
+            return new Program(firstToken, returnType, name, params, decsAndStatements);
+        }
+        else{
+            throw new SyntaxException("");
+        }
     }
 
 
     public NameDef nameDef() throws PLCException{
         Token firstToken = currentToken;
         if(isKind(TYPE)){
-            if(match(IDENT) != null){
+            consume();
+            Token name = match(IDENT);
+            if(name != null){
                 return new NameDef(firstToken, firstToken, currentToken);
             }
             else{
-                consume();
+                Dimension dim = dimension();
+                if (dim != null){
+                    consume();
+                    name = match(IDENT);
+                    if(name != null){
+                        return new NameDefWithDim(firstToken, firstToken, currentToken, dim);
+                    }
+                }
+                else{
+                    //throw new SyntaxException("");
+                    return null;
+                }
                 //return new NameDefWithDim(firstToken, firstToken, currentToken, dimension());
             }
         }
-        throw new SyntaxException("");
+        return null;
     }
 
-    public Expr declaration() throws PLCException{
+    public VarDeclaration declaration() throws PLCException{
+        Token firstToken = currentToken;
+        NameDef nameDef = nameDef();
+        if (nameDef != null){
+            if(isKind(ASSIGN) || isKind(LARROW)){
+                Token op = currentToken;
+                consume();
+                Expr e = expr();
+                return new VarDeclaration(firstToken, nameDef, op, e);
+            }
+            return new VarDeclaration(firstToken, nameDef, null, null);
+        }
         return null;
     }
 
@@ -347,7 +410,7 @@ public class Parser implements IParser{
                 return new ReadStatement(firstToken, name.getText(), pixelSelector, e);
             }
             else{
-                throw new SyntaxException("");
+                return null;
             }
         }
         else{
@@ -358,7 +421,7 @@ public class Parser implements IParser{
                     return new WriteStatement(firstToken, source, dest);
                 }
                 else{
-                    throw new SyntaxException("");
+                    return null;
                 }
             }
             else{
@@ -367,7 +430,7 @@ public class Parser implements IParser{
                     return new ReturnStatement(firstToken, e);
                 }
                 else{
-                    throw new SyntaxException("");
+                    return null;
                 }
             }
         }
