@@ -1,5 +1,6 @@
 package edu.ufl.cise.plc;
 import edu.ufl.cise.plc.ast.*;
+import edu.ufl.cise.plc.ast.Types.*;
 import java.util.List;
 import static edu.ufl.cise.plc.IToken.Kind.*;
 
@@ -81,23 +82,44 @@ public class Parser implements IParser{
 
     /*=== GRAMMAR RULE FUNCTIONS ===*/
     public Program program() throws PLCException {
+
         Token firstToken = currentToken;
-        Expr e = null;
-        Types.Type returnType = null;
-        String name = "";
+        Type returnType = null;
+        String name = null;
+        List<NameDef> params = null;
+        List<ASTNode> decsAndStatements = null;
+
         if (isKind(TYPE) || isKind(KW_VOID)){
-            returnType = Types.Type.toType(firstToken.getText());
+            returnType = Type.toType(firstToken.getText());
         }
+
         Token identToken = match(IDENT);
         if (identToken != null){
             name = identToken.getText();
         }
-        return null;
+
+        match(LPAREN);
+        while(match(COMMA) != null){
+            params.add(nameDef());
+        }
+        match(RPAREN);
+
+        return new Program(firstToken, returnType, name, params, decsAndStatements);
     }
 
 
-    public Expr nameDef() throws PLCException{
-        return null;
+    public NameDef nameDef() throws PLCException{
+        Token firstToken = currentToken;
+        if(isKind(TYPE)){
+            if(match(IDENT) != null){
+                return new NameDef(firstToken, firstToken, currentToken);
+            }
+            else{
+                consume();
+                //return new NameDefWithDim(firstToken, firstToken, currentToken, dimension());
+            }
+        }
+        throw new SyntaxException("");
     }
 
     public Expr declaration() throws PLCException{
@@ -218,7 +240,12 @@ public class Parser implements IParser{
 
     public Expr UnaryExprPostfix() throws PLCException{
         //PrimaryExpr is called first and PixelSelector is called within it
-        Expr e = pixelSelector();
+        Token firstToken = currentToken;
+        Expr e = primaryExpr();
+        PixelSelector pixelSelector = pixelSelector();
+        if(pixelSelector != null){
+            e = new UnaryExprPostfix(firstToken, e, pixelSelector);
+        }
         return e;
     }
 
@@ -277,38 +304,72 @@ public class Parser implements IParser{
         return e;
     }
 
-    public Expr pixelSelector() throws PLCException{
-        Token firstToken = currentToken;
-        //PrimaryExpr is called first
-        Expr e = primaryExpr();
+    public PixelSelector pixelSelector() throws PLCException{
         if(isKind(LSQUARE)){
+            Token firstToken = currentToken;
             consume();
-            Expr e1 = expr();
+            Expr x = expr();
             match(COMMA);
-            Expr e2 = expr();
+            Expr y = expr();
             match(RSQUARE);
-            PixelSelector pixelSel = new PixelSelector(firstToken, e1, e2);
-            e = new UnaryExprPostfix(firstToken, e, pixelSel);
+            return new PixelSelector(firstToken, x, y);
         }
-        return e;
-    }
-
-    public Expr dimension() throws PLCException{
-        Token firstToken = currentToken;
-        Expr e = null;
-        if(isKind(LSQUARE)){
-            consume();
-            Expr e1 = expr();
-            match(COMMA);
-            Expr e2 = expr();
-            match(RSQUARE);
-            PixelSelector pixelSel = new PixelSelector(firstToken, e1, e2);
-            e = new UnaryExprPostfix(firstToken, e, pixelSel);
-        }
-        return e;
-    }
-
-    public Expr statement() throws PLCException{
         return null;
+    }
+
+    public Dimension dimension() throws PLCException{
+        if(isKind(LSQUARE)){
+            Token firstToken = currentToken;
+            consume();
+            Expr width = expr();
+            match(COMMA);
+            Expr height = expr();
+            match(RSQUARE);
+            return new Dimension(firstToken, width, height);
+        }
+        return null;
+    }
+
+    public Statement statement() throws PLCException{
+        Token firstToken = currentToken;
+        Expr e;
+
+        Token name = match(IDENT);
+        if(name != null){
+            consume();
+            PixelSelector pixelSelector = pixelSelector();
+            if(match(ASSIGN) != null){
+                e = expr();
+                return new AssignmentStatement(firstToken, name.getText(), pixelSelector, e);
+            }
+            else if (match(LARROW) != null){
+                e = expr();
+                return new ReadStatement(firstToken, name.getText(), pixelSelector, e);
+            }
+            else{
+                throw new SyntaxException("");
+            }
+        }
+        else{
+            if(match(KW_WRITE) != null){
+                Expr source = expr();
+                if(match(LARROW) != null){
+                    Expr dest = expr();
+                    return new WriteStatement(firstToken, source, dest);
+                }
+                else{
+                    throw new SyntaxException("");
+                }
+            }
+            else{
+                if(match(RETURN) != null){
+                    e = expr();
+                    return new ReturnStatement(firstToken, e);
+                }
+                else{
+                    throw new SyntaxException("");
+                }
+            }
+        }
     }
 }
