@@ -107,12 +107,11 @@ public class Parser implements IParser{
 
                 if(nameDef != null){
                     params.add(nameDef);
-                    consume();
                     while(isKind(COMMA)){
+                        consume();
                         nameDef = nameDef();
                         if(nameDef !=  null){
                             params.add(nameDef);
-                            consume();
                         }
                     }
                 }
@@ -133,7 +132,6 @@ public class Parser implements IParser{
                     if(!isKind(SEMI)){
                         break;
                     }
-                    consume();
                     dec = declaration();
                     state = statement();
                 }
@@ -153,7 +151,7 @@ public class Parser implements IParser{
             consume();
             Token name = match(IDENT);
             if(name != null){
-                return new NameDef(firstToken, firstToken, currentToken);
+                return new NameDef(firstToken, firstToken.getText(), name.getText());
             }
             else{
                 Dimension dim = dimension();
@@ -161,7 +159,7 @@ public class Parser implements IParser{
                     consume();
                     name = match(IDENT);
                     if(name != null){
-                        return new NameDefWithDim(firstToken, firstToken, currentToken, dim);
+                        return new NameDefWithDim(firstToken, firstToken.getText(), name.getText(), dim);
                     }
                 }
                 else{
