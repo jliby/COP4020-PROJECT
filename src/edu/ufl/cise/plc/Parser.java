@@ -45,7 +45,6 @@ public class Parser implements IParser{
                 return consume();
             }
         }
-        //throw new SyntaxException("");
         return null;
     }
 
@@ -98,7 +97,10 @@ public class Parser implements IParser{
             if (identToken != null){
                 name = identToken.getText();
 
-                match(LPAREN);
+                Token lParen = match(LPAREN);
+                if (lParen == null){
+                    throw new SyntaxException("");
+                }
 
                 NameDef nameDef = nameDef();
 
@@ -110,10 +112,16 @@ public class Parser implements IParser{
                         if(nameDef !=  null){
                             params.add(nameDef);
                         }
+                        else if (isKind(RPAREN)){
+                            throw new SyntaxException("");
+                        }
                     }
                 }
 
-                match(RPAREN);
+                Token rParen = match(RPAREN);
+                if (rParen == null){
+                    throw new SyntaxException("");
+                }
 
                 Declaration dec = declaration();
                 Statement state = statement();
