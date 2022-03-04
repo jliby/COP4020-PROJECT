@@ -97,6 +97,7 @@ public class Parser implements IParser{
             Token identToken = match(IDENT);
             if (identToken != null){
                 name = identToken.getText();
+
                 match(LPAREN);
 
                 NameDef nameDef = nameDef();
@@ -117,6 +118,7 @@ public class Parser implements IParser{
                 Declaration dec = declaration();
                 Statement state = statement();
 
+                //Try changing this to try catch and change return null to throw except in state and dec functs.
                 while (dec != null || state != null){
                     if(dec != null){
                         decsAndStatements.add(dec);
@@ -132,14 +134,15 @@ public class Parser implements IParser{
                     state = statement();
 
                 }
+
+                if (dec == null && state == null && !isKind(EOF)){
+                    throw new SyntaxException("");
+                }
+
                 return new Program(firstToken, returnType,name,params,decsAndStatements);
             }
-
-            return new Program(firstToken, returnType, name, params, decsAndStatements);
         }
-        else{
-            throw new SyntaxException("");
-        }
+        throw new SyntaxException("");
     }
 
 
@@ -162,7 +165,6 @@ public class Parser implements IParser{
                     }
                 }
                 else{
-                    System.out.println(current);
                     throw new SyntaxException("");
                 }
             }
