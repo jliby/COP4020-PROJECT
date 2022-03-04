@@ -1466,11 +1466,8 @@ class Assignment3StarterTest {
 
 		String[] colors = {"BLACK", "BLUE", "CYAN", "DARK_GRAY", "GRAY", "GREEN", "LIGHT_GRAY", "MAGENTA", "ORANGE", "PINK",
 				"RED", "WHITE", "YELLOW"};
-
-
+		
 		for (int i = 0; i < 13; ++i) {
-
-
 			ASTNode var0 = decsAndStatements.get(i);
 			assertThat("", var0, instanceOf(ReturnStatement.class));
 			Expr var1 = ((ReturnStatement) var0).getExpr();
@@ -1478,7 +1475,6 @@ class Assignment3StarterTest {
 			assertEquals(colors[i], ((ColorConstExpr) var1).getText());
 		}
 	}
-
 
 	@DisplayName("ColorExpr")
 	@Test
@@ -1509,7 +1505,8 @@ class Assignment3StarterTest {
 
 
 	}
-	@DisplayName("programStructureFucked1")
+
+	@DisplayName("programStructureMessedUp1")
 	@Test
 	public void pSF1(TestInfo testInfo) throws Exception {
 		String input = """
@@ -1524,6 +1521,5 @@ class Assignment3StarterTest {
 		});
 		show("Expected syntax exception: " + e);
 	}
-
 }
 
