@@ -45,7 +45,6 @@ public class Parser implements IParser{
                 return consume();
             }
         }
-        //throw new SyntaxException("");
         return null;
     }
 
@@ -73,21 +72,20 @@ public class Parser implements IParser{
         }
         return false;
     }
-    boolean reachedEndOfFunction = true;
 
     @Override
     public ASTNode parse() throws PLCException{
-        //AST = expr();
         AST = program();
         return AST;
     }
 
     /*=== GRAMMAR RULE FUNCTIONS ===*/
-    public Program program() throws PLCException {
+    public Program program() throws PLCException{
 
+        //Declare Program Const. Parameters
         Token firstToken = currentToken;
-        Type returnType = null;
-        String name = null;
+        Type returnType;
+        String name;
         List<NameDef> params = new java.util.ArrayList<>(Collections.emptyList());
         List<ASTNode> decsAndStatements = new java.util.ArrayList<>(Collections.emptyList());
 
@@ -95,9 +93,14 @@ public class Parser implements IParser{
             returnType = Type.toType(firstToken.getText());
             consume();
             Token identToken = match(IDENT);
+
             if (identToken != null){
                 name = identToken.getText();
-                match(LPAREN);
+
+                Token lParen = match(LPAREN);
+                if (lParen == null){
+                    throw new SyntaxException("");
+                }
 
                 NameDef nameDef = nameDef();
 
@@ -109,10 +112,16 @@ public class Parser implements IParser{
                         if(nameDef !=  null){
                             params.add(nameDef);
                         }
+                        else{
+                            throw new SyntaxException("");
+                        }
                     }
                 }
 
-                match(RPAREN);
+                Token rParen = match(RPAREN);
+                if (rParen == null){
+                    throw new SyntaxException("");
+                }
 
                 Declaration dec = declaration();
                 Statement state = statement();
@@ -121,7 +130,7 @@ public class Parser implements IParser{
                     if(dec != null){
                         decsAndStatements.add(dec);
                     }
-                    else if (state != null){
+                    else{
                         decsAndStatements.add(state);
                     }
                     if(!isKind(SEMI)){
@@ -130,26 +139,23 @@ public class Parser implements IParser{
                     consume();
                     dec = declaration();
                     state = statement();
-
                 }
+
+                if (!isKind(EOF)){
+                    throw new SyntaxException("");
+                }
+
                 return new Program(firstToken, returnType,name,params,decsAndStatements);
             }
-
-            return new Program(firstToken, returnType, name, params, decsAndStatements);
         }
-        else{
-            throw new SyntaxException("");
-        }
+        throw new SyntaxException("");
     }
-
 
     public NameDef nameDef() throws PLCException{
         Token firstToken = currentToken;
         if(isKind(TYPE)){
-
             consume();
             Token name = match(IDENT);
-
             if(name != null){
                 return new NameDef(firstToken, firstToken.getText(), name.getText());
             }
@@ -162,7 +168,6 @@ public class Parser implements IParser{
                     }
                 }
                 else{
-                    System.out.println(current);
                     throw new SyntaxException("");
                 }
             }
@@ -173,7 +178,6 @@ public class Parser implements IParser{
     public VarDeclaration declaration() throws PLCException{
         Token firstToken = currentToken;
         NameDef nameDef = nameDef();
-
         if (nameDef != null){
             if(isKind(ASSIGN) || isKind(LARROW)){
                 Token op = currentToken;
@@ -184,9 +188,7 @@ public class Parser implements IParser{
             }
             return new VarDeclaration(firstToken, nameDef, null, null);
         }
-
         return null;
-
     }
 
     public Expr expr() throws PLCException{
@@ -302,7 +304,6 @@ public class Parser implements IParser{
     }
 
     public Expr UnaryExprPostfix() throws PLCException{
-        //PrimaryExpr is called first and PixelSelector is called within it
         Token firstToken = currentToken;
         Expr e = primaryExpr();
         PixelSelector pixelSelector = pixelSelector();
@@ -396,8 +397,6 @@ public class Parser implements IParser{
     public Statement statement() throws PLCException{
         Token firstToken = currentToken;
         Expr e;
-
-
         Token name = match(IDENT);
         if(name != null){
             PixelSelector pixelSelector = pixelSelector();
@@ -430,13 +429,8 @@ public class Parser implements IParser{
                     return new ReturnStatement(firstToken, e);
                 }
                 else{
-                    if(reachedEndOfFunction == false) {
-                        reachedEndOfFunction = true;
-                        throw new SyntaxException("");
-                    }
                     return null;
                 }
-
             }
         }
     }
