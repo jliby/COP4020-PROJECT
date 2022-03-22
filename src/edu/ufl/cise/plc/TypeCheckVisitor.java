@@ -180,8 +180,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws Exception {
-//		//TODO:  implement this method
-//		throw new UnsupportedOperationException("Unimplemented visit method.");
+		//TODO:  implement this method
+		throw new UnsupportedOperationException("Unimplemented visit method.");
 //		String name = identExpr.getName();
 //		Declaration dec = symbolTable.lookup(name);
 //		check(dec != null, identExpr, "undefined identifier " + name);
