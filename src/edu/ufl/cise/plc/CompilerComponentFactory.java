@@ -2,7 +2,7 @@ package edu.ufl.cise.plc;
 import edu.ufl.cise.plc.ast.ASTVisitor;
 
 public class CompilerComponentFactory {
-	
+
 	public static Lexer getLexer(String input) {
 		Lexer test = new Lexer(input);
 		test.Scanner();

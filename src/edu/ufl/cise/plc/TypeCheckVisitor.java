@@ -59,14 +59,14 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws Exception {
-		//TODO:  implement this method
-		throw new UnsupportedOperationException("Unimplemented visit method.");
+		stringLitExpr.setType(Type.STRING);
+		return Type.STRING;
 	}
 
 	@Override
 	public Object visitIntLitExpr(IntLitExpr intLitExpr, Object arg) throws Exception {
-		//TODO:  implement this method
-		throw new UnsupportedOperationException("Unimplemented visit method.");
+		intLitExpr.setType(Type.INT);
+		return Type.INT;
 	}
 
 	@Override
@@ -144,6 +144,15 @@ public class TypeCheckVisitor implements ASTVisitor {
 	public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws Exception {
 		//TODO:  implement this method
 		throw new UnsupportedOperationException("Unimplemented visit method.");
+//		String name = identExpr.getName();
+//		Declaration dec = symbolTable.lookup(name);
+//		check(dec != null, identExpr, "undefined identifier " + name);
+//		check(dec.isAssigned(), identExpr, "using uninitialized variable");
+//		identExpr.setDec(dec);  //save declaration--will be useful later.
+//		Type type = dec.getType();
+//		identExpr.setType(type);
+//		return type;
+
 	}
 
 	@Override
