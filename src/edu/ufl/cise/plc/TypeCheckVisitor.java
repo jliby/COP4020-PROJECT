@@ -2,7 +2,6 @@ package edu.ufl.cise.plc;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import edu.ufl.cise.plc.IToken.Kind;
 import edu.ufl.cise.plc.ast.ASTNode;
@@ -37,20 +36,20 @@ import static edu.ufl.cise.plc.ast.Types.Type.*;
 
 public class TypeCheckVisitor implements ASTVisitor {
 
-	SymbolTable symbolTable = new SymbolTable();  
+	SymbolTable symbolTable = new SymbolTable();
 	Program root;
-	
+
 	record Pair<T0,T1>(T0 t0, T1 t1){};  //may be useful for constructing lookup tables.
-	
+
 	private void check(boolean condition, ASTNode node, String message) throws TypeCheckException {
 		if (!condition) {
 			throw new TypeCheckException(message, node.getSourceLoc());
 		}
 	}
-	
-	//The type of a BooleanLitExpr is always BOOLEAN.  
+
+	//The type of a BooleanLitExpr is always BOOLEAN.
 	//Set the type in AST Node for later passes (code generation)
-	//Return the type for convenience in this visitor.  
+	//Return the type for convenience in this visitor.
 	@Override
 	public Object visitBooleanLitExpr(BooleanLitExpr booleanLitExpr, Object arg) throws Exception {
 		booleanLitExpr.setType(Type.BOOLEAN);
@@ -86,7 +85,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		consoleExpr.setType(Type.CONSOLE);
 		return Type.CONSOLE;
 	}
-	
+
 	//Visits the child expressions to get their type (and ensure they are correctly typed)
 	//then checks the given conditions.
 	@Override
@@ -99,13 +98,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 		Type exprType = (redType == Type.INT) ? Type.COLOR : Type.COLORFLOAT;
 		colorExpr.setType(exprType);
 		return exprType;
-	}	
+	}
 
-	
-	
-	//Maps forms a lookup table that maps an operator expression pair into result type.  
-	//This more convenient than a long chain of if-else statements. 
-	//Given combinations are legal; if the operator expression pair is not in the map, it is an error. 
+
+
+	//Maps forms a lookup table that maps an operator expression pair into result type.
+	//This more convenient than a long chain of if-else statements.
+	//Given combinations are legal; if the operator expression pair is not in the map, it is an error.
 	Map<Pair<Kind,Type>, Type> unaryExprs = Map.of(
 			new Pair<Kind,Type>(Kind.BANG,BOOLEAN), BOOLEAN,
 			new Pair<Kind,Type>(Kind.MINUS, FLOAT), FLOAT,
@@ -114,10 +113,10 @@ public class TypeCheckVisitor implements ASTVisitor {
 			new Pair<Kind,Type>(Kind.COLOR_OP,COLOR), INT,
 			new Pair<Kind,Type>(Kind.COLOR_OP,IMAGE), IMAGE,
 			new Pair<Kind,Type>(Kind.IMAGE_OP,IMAGE), INT
-			);
-	
+	);
+
 	//Visits the child expression to get the type, then uses the above table to determine the result type
-	//and check that this node represents a legal combination of operator and expression type. 
+	//and check that this node represents a legal combination of operator and expression type.
 	@Override
 	public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws Exception {
 		// !, -, getRed, getGreen, getBlue
@@ -126,14 +125,14 @@ public class TypeCheckVisitor implements ASTVisitor {
 		//Use the lookup table above to both check for a legal combination of operator and expression, and to get result type.
 		Type resultType = unaryExprs.get(new Pair<Kind,Type>(op,exprType));
 		check(resultType != null, unaryExpr, "incompatible types for unaryExpr");
-		//Save the type of the unary expression in the AST node for use in code generation later. 
+		//Save the type of the unary expression in the AST node for use in code generation later.
 		unaryExpr.setType(resultType);
 		//return the type for convenience in this visitor.
 		return resultType;
 	}
 
 
-	//This method has several cases. Work incrementally and test as you go. 
+	//This method has several cases. Work incrementally and test as you go.
 	@Override
 	public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws Exception {
 		Kind op = binaryExpr.getOp().getKind();
@@ -149,6 +148,26 @@ public class TypeCheckVisitor implements ASTVisitor {
 				if (leftType == Type.INT && rightType == Type.INT) resultType = Type.INT;
 				else if (leftType == Type.STRING && rightType == Type.STRING) resultType = Type.STRING;
 				else if (leftType == Type.BOOLEAN && rightType == Type.BOOLEAN) resultType = Type.BOOLEAN;
+				else if (leftType == FLOAT && rightType == FLOAT) resultType = Type.FLOAT;
+				else if (leftType == COLOR && rightType == COLOR) resultType = Type.COLOR;
+				else if (leftType == IMAGE && rightType == IMAGE) resultType = Type.IMAGE;
+
+				else if (leftType == Type.INT && rightType == FLOAT) {
+					binaryExpr.getLeft().setCoerceTo(FLOAT);
+					resultType = FLOAT;
+				}
+				else if (leftType == FLOAT  && rightType == INT) {
+					binaryExpr.getRight().setCoerceTo(FLOAT);
+					resultType = FLOAT;
+				}
+				else if (leftType == COLOR && rightType == COLORFLOAT) {
+					binaryExpr.getLeft().setCoerceTo(COLORFLOAT);
+					resultType = FLOAT;
+				}
+				else if (leftType == COLORFLOAT && rightType == COLORFLOAT) {
+					binaryExpr.getLeft().setCoerceTo(COLORFLOAT);
+					resultType = FLOAT;
+				}
 				else check(false, binaryExpr, "incompatible types for operator");
 			}
 			case  MINUS -> {
@@ -197,7 +216,11 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws Exception {
 		//TODO  implement this method
-		throw new UnsupportedOperationException();
+		Type condType =(Type) conditionalExpr.visit(this, arg);
+
+		check(condType == BOOLEAN, conditionalExpr, "condition must be boolean");
+		check(conditionalExpr.getTrueCase().getType() == conditionalExpr.getFalseCase().getType(), conditionalExpr, "trueCase must be equal to false case");
+		return conditionalExpr.getTrueCase().getType();
 	}
 
 	@Override
@@ -207,7 +230,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 	}
 
 	@Override
-	//This method can only be used to check PixelSelector objects on the right hand side of an assignment. 
+	//This method can only be used to check PixelSelector objects on the right hand side of an assignment.
 	//Either modify to pass in context info and add code to handle both cases, or when on left side
 	//of assignment, check fields from parent assignment statement.
 	public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws Exception {
@@ -220,15 +243,11 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	//This method several cases--you don't have to implement them all at once.
-	//Work incrementally and systematically, testing as you go.  
+	//Work incrementally and systematically, testing as you go.
 	public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws Exception {
 		//TODO:  implement this method
 
 		throw new UnsupportedOperationException("Unimplemented visit method.");
-
-//		Declaration target = symbolTable.lookup(assignmentStatement.getName());
-//		Type targetType = target.getType();
-
 	}
 
 
@@ -245,7 +264,23 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitReadStatement(ReadStatement readStatement, Object arg) throws Exception {
 		//TODO:  implement this method
-		throw new UnsupportedOperationException("Unimplemented visit method.");
+		Type targetType;
+		String name = readStatement.getName();
+		Declaration inserted = symbolTable.lookup(name);
+		if(inserted != null)  targetType = inserted.getType();
+		if(readStatement.getSelector() != null) {
+			throw new TypeCheckException("");
+		}
+		Type  rightType = (Type) readStatement.getSource().visit(this, arg);
+
+		if (rightType == CONSOLE || rightType == STRING) {
+			readStatement.getTargetDec().setInitialized(true);
+		} else {
+			throw new TypeCheckException("");
+
+		}
+
+		return null;
 	}
 
 	@Override
@@ -256,18 +291,23 @@ public class TypeCheckVisitor implements ASTVisitor {
 		Expr initializer = declaration.getExpr();
 		if(initializer != null) {
 			Type initializerType = (Type) initializer.visit(this, arg);
+
+
 			declaration.setInitialized(true);
+			if(declaration.getType() == FLOAT && initializer.getType() == INT) 	declaration.getExpr().setCoerceTo(FLOAT);
+
+
 		}
+
 		return null;
 	}
 
 	@Override
 	public Object visitProgram(Program program, Object arg) throws Exception {
-		
+		//TODO:  this method is incomplete, finish it.
+
 		//Save root of AST so return type can be accessed in return statements
 		root = program;
-
-		symbolTable.insert(program.getName(), null);
 
 		List<NameDef> params = program.getParams();
 		for(NameDef nameDef: params) {
@@ -296,7 +336,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		//TODO:  implement this method
 		throw new UnsupportedOperationException();
 	}
- 
+
 	@Override
 	public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws Exception {
 		Type returnType = root.getReturnType();  //This is why we save program in visitProgram.
@@ -312,6 +352,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 		unaryExprPostfix.getSelector().visit(this, arg);
 		unaryExprPostfix.setType(Type.INT);
 		unaryExprPostfix.setCoerceTo(COLOR);
+
 		return Type.COLOR;
 	}
+
 }
