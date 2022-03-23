@@ -216,7 +216,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws Exception {
 		//TODO  implement this method
-		Type condType =(Type) conditionalExpr.visit(this, arg);
+		Type condType = (Type) conditionalExpr.getCondition().visit(this, arg);
 
 		check(condType == BOOLEAN, conditionalExpr, "condition must be boolean");
 		check(conditionalExpr.getTrueCase().getType() == conditionalExpr.getFalseCase().getType(), conditionalExpr, "trueCase must be equal to false case");
@@ -245,9 +245,20 @@ public class TypeCheckVisitor implements ASTVisitor {
 	//This method several cases--you don't have to implement them all at once.
 	//Work incrementally and systematically, testing as you go.
 	public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws Exception {
-		//TODO:  implement this method
-
-		throw new UnsupportedOperationException("Unimplemented visit method.");
+		Type targetType = null;
+		String name = assignmentStatement.getName();
+		Declaration inserted = symbolTable.lookup(name);
+		if(inserted != null) targetType = inserted.getType();
+		if(assignmentStatement.getSelector() != null) {
+			throw new TypeCheckException("");
+		}
+		Type  rightType = (Type) assignmentStatement.getSelector().visit(this, arg);
+		if (rightType == targetType) {
+			assignmentStatement.getTargetDec().setInitialized(true);
+		} else {
+			throw new TypeCheckException("");
+		}
+		return null;
 	}
 
 
