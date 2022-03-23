@@ -249,7 +249,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		String name = assignmentStatement.getName();
 		Declaration inserted = symbolTable.lookup(name);
 		if(inserted != null) targetType = inserted.getType();
-		if(assignmentStatement.getSelector() != null) {
+		if(assignmentStatement.getSelector() == null) {
 			throw new TypeCheckException("");
 		}
 		Type  rightType = (Type) assignmentStatement.getSelector().visit(this, arg);
