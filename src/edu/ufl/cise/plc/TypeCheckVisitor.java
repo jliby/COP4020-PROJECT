@@ -77,8 +77,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitColorConstExpr(ColorConstExpr colorConstExpr, Object arg) throws Exception {
-		//TODO:  implement this method
-		throw new UnsupportedOperationException("Unimplemented visit method.");
+		colorConstExpr.setType(Type.COLOR);
+		return Type.COLOR;
 	}
 
 	@Override
@@ -181,15 +181,16 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws Exception {
 		//TODO:  implement this method
-		throw new UnsupportedOperationException("Unimplemented visit method.");
-//		String name = identExpr.getName();
-//		Declaration dec = symbolTable.lookup(name);
-//		check(dec != null, identExpr, "undefined identifier " + name);
-//		check(dec.isAssigned(), identExpr, "using uninitialized variable");
-//		identExpr.setDec(dec);  //save declaration--will be useful later.
-//		Type type = dec.getType();
-//		identExpr.setType(type);
-//		return type;
+		//throw new UnsupportedOperationException("Unimplemented visit method.");
+
+		String name = identExpr.getFirstToken().getText();
+		Declaration dec = symbolTable.lookup(name);
+		check(dec != null, identExpr, "undefined identifier " + name);
+		check(dec.isInitialized(), identExpr, "using uninitialized variable");
+		identExpr.setDec(dec);  //save declaration--will be useful later.
+		Type type = dec.getType();
+		identExpr.setType(type);
+		return type;
 
 	}
 
@@ -244,10 +245,16 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitVarDeclaration(VarDeclaration declaration, Object arg) throws Exception {
-		//TODO:  implement this method
-		throw new UnsupportedOperationException("Unimplemented visit method.");
+		String name = declaration.getName();
+		boolean inserted = symbolTable.insert(name, declaration);
+		check(inserted, declaration, "variable " + name + " already declared");
+		Expr initializer = declaration.getExpr();
+		if(initializer != null) {
+			Type initializerType = (Type) initializer.visit(this, arg);
+			declaration.setInitialized(true);
+		}
+		return null;
 	}
-
 
 	@Override
 	public Object visitProgram(Program program, Object arg) throws Exception {		
@@ -255,7 +262,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 		
 		//Save root of AST so return type can be accessed in return statements
 		root = program;
-		
+
+		List<NameDef> params = program.getParams();
+		for(NameDef nameDef: params) {
+			nameDef.visit(this, arg);
+			nameDef.setInitialized(true);
+		}
+
 		//Check declarations and statements
 		List<ASTNode> decsAndStatements = program.getDecsAndStatements();
 		for (ASTNode node : decsAndStatements) {
@@ -266,8 +279,10 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitNameDef(NameDef nameDef, Object arg) throws Exception {
-		//TODO:  implement this method
-		throw new UnsupportedOperationException();
+		if (!symbolTable.insert(nameDef.getName(), nameDef)){
+			throw new TypeCheckException(nameDef.getName() + " already exists");
+		}
+		return null;
 	}
 
 	@Override
@@ -293,5 +308,4 @@ public class TypeCheckVisitor implements ASTVisitor {
 		unaryExprPostfix.setCoerceTo(COLOR);
 		return Type.COLOR;
 	}
-
 }
