@@ -223,7 +223,12 @@ public class TypeCheckVisitor implements ASTVisitor {
 	//Work incrementally and systematically, testing as you go.  
 	public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws Exception {
 		//TODO:  implement this method
+
 		throw new UnsupportedOperationException("Unimplemented visit method.");
+
+//		Declaration target = symbolTable.lookup(assignmentStatement.getName());
+//		Type targetType = target.getType();
+
 	}
 
 
@@ -257,11 +262,12 @@ public class TypeCheckVisitor implements ASTVisitor {
 	}
 
 	@Override
-	public Object visitProgram(Program program, Object arg) throws Exception {		
-		//TODO:  this method is incomplete, finish it.  
+	public Object visitProgram(Program program, Object arg) throws Exception {
 		
 		//Save root of AST so return type can be accessed in return statements
 		root = program;
+
+		symbolTable.insert(program.getName(), null);
 
 		List<NameDef> params = program.getParams();
 		for(NameDef nameDef: params) {
