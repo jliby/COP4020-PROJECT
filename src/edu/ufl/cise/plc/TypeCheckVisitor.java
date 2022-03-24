@@ -290,7 +290,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		Type trueType = (Type) conditionalExpr.getTrueCase().visit(this, arg);
 		Type falseType = (Type) conditionalExpr.getFalseCase().visit(this, arg);
 		check(conditionType == Type.BOOLEAN, conditionalExpr, "condition must be type boolean");
-		check(trueType == falseType, conditionalExpr, "type of true case must match type of false case");
+		check(trueType == falseType, conditionalExpr, "trueCase must be equal to false cas");
 		conditionalExpr.setType(trueType);
 		return trueType;
 	}
