@@ -269,7 +269,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		String name = identExpr.getFirstToken().getText();
 		Declaration dec = symbolTable.lookup(name);
 		check(dec != null, identExpr, "undefined identifier " + name);
-		check(dec.isInitialized(), identExpr, "using uninitialized variable");
+		check(dec.isInitialized(), identExpr, "using uninitialized variable " + name);
 		identExpr.setDec(dec);  //save declaration--will be useful later.
 		Type type = dec.getType();
 		identExpr.setType(type);
@@ -364,9 +364,18 @@ public class TypeCheckVisitor implements ASTVisitor {
 								assignmentStatement.getSelector().getY() instanceof IdentExpr , assignmentStatement,
 						" left side has no identity");
 
+				NameDef xND = new NameDef(assignmentStatement.getFirstToken(), "int", "x");
+				NameDef yND = new NameDef(assignmentStatement.getFirstToken(), "int", "y");
 
-				symbolTable.insert(X, new VarDeclaration(null, null, null, null));
-				symbolTable.insert(Y, new VarDeclaration(null, null, null, null));
+				VarDeclaration xDec = new VarDeclaration(assignmentStatement.getFirstToken(), xND, null, null);
+				VarDeclaration yDec = new VarDeclaration(assignmentStatement.getFirstToken(), yND, null, null);
+
+				symbolTable.insert(X, xDec);
+				symbolTable.insert(Y, yDec);
+
+				xDec.setInitialized(true);
+				yDec.setInitialized(true);
+
 				expressionType =(Type) assignmentStatement.getExpr().visit(this, arg);
 				if (expressionType == COLORFLOAT || expressionType == FLOAT || expressionType == INT || expressionType == COLOR) {
 					isCompatible = true;
@@ -374,11 +383,15 @@ public class TypeCheckVisitor implements ASTVisitor {
 						assignmentStatement.getExpr().setCoerceTo(COLOR);
 					}
 				}
+
 				symbolTable.remove(X);
 				symbolTable.remove(Y);
-			}
 
+				xDec.setInitialized(false);
+				yDec.setInitialized(false);
+			}
 		}
+
 		check(isCompatible, assignmentStatement, "not compatible: "
 				+ assignmentStatement.getName());
 
