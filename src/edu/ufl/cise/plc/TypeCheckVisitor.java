@@ -101,8 +101,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 		return exprType;
 	}
 
-
-
 	//Maps forms a lookup table that maps an operator expression pair into result type.
 	//This more convenient than a long chain of if-else statements.
 	//Given combinations are legal; if the operator expression pair is not in the map, it is an error.
@@ -140,7 +138,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 		Type rightType = (Type) binaryExpr.getRight().visit(this, arg);
 		Type returnType = null;
 
-		//Now for a copious number of branches
 		if((op == Kind.AND || op == Kind.OR) && leftType == Type.BOOLEAN && rightType == Type.BOOLEAN) {
 			returnType = Type.BOOLEAN;
 		}
@@ -256,16 +253,12 @@ public class TypeCheckVisitor implements ASTVisitor {
 		else {
 			check(false, binaryExpr, "invalid types for binary expression");
 		}
-
 		binaryExpr.setType(returnType);
 		return returnType;
 	}
 
 	@Override
 	public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws Exception {
-		//TODO:  implement this method
-		//throw new UnsupportedOperationException("Unimplemented visit method.");
-
 		String name = identExpr.getFirstToken().getText();
 		Declaration dec = symbolTable.lookup(name);
 		check(dec != null, identExpr, "undefined identifier " + name);
@@ -279,13 +272,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws Exception {
-		//TODO  implement this method
-//		Type condType = (Type) conditionalExpr.getCondition().visit(this, arg);
-//
-//		check(condType == BOOLEAN, conditionalExpr, "condition must be boolean");
-//		check(conditionalExpr.getTrueCase().getType() == conditionalExpr.getFalseCase().getType(), conditionalExpr, "trueCase must be equal to false case");
-//		return conditionalExpr.getTrueCase().getType();
-
 		Type conditionType = (Type) conditionalExpr.getCondition().visit(this, arg);
 		Type trueType = (Type) conditionalExpr.getTrueCase().visit(this, arg);
 		Type falseType = (Type) conditionalExpr.getFalseCase().visit(this, arg);
@@ -294,7 +280,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 		conditionalExpr.setType(trueType);
 		return trueType;
 	}
-
 
 	@Override
 	public Object visitDimension(Dimension dimension, Object arg) throws Exception {
@@ -324,41 +309,38 @@ public class TypeCheckVisitor implements ASTVisitor {
 		boolean isCompatible = false;
 
 		Declaration targetDecleration = symbolTable.lookup(assignmentStatement.getName());
-		check(targetDecleration !=null, assignmentStatement, "var is not declared: " + assignmentStatement.getName());
+		check(targetDecleration != null, assignmentStatement, "var is not declared: " + assignmentStatement.getName());
 
 		Type expressionType = null;
 		Type targetType= targetDecleration.getType();
-		if(assignmentStatement.getSelector()==null) expressionType =(Type) assignmentStatement.getExpr().visit(this, arg);
+		if(assignmentStatement.getSelector() == null) expressionType = (Type) assignmentStatement.getExpr().visit(this, arg);
 
 		assignmentStatement.setTargetDec(targetDecleration);
 		if(targetType != IMAGE){
-			check(assignmentStatement.getSelector()==null, assignmentStatement, "not image data type cannnot have pixel selector");
-			if(targetType==expressionType) isCompatible = true;
-			else if (((targetType==INT && expressionType==COLOR) || (targetType==COLOR && expressionType ==INT) || (targetType==INT && expressionType ==FLOAT) || (targetType==FLOAT && expressionType==INT) )){
-				isCompatible=true;
+			check(assignmentStatement.getSelector() == null, assignmentStatement, "not image data type cannnot have pixel selector");
+			if(targetType == expressionType) isCompatible = true;
+			else if (((targetType == INT && expressionType == COLOR) || (targetType == COLOR && expressionType == INT) || (targetType == INT && expressionType == FLOAT) || (targetType == FLOAT && expressionType == INT) )){
+				isCompatible = true;
 				//set coercion
 				assignmentStatement.getExpr().setCoerceTo(targetType);
 			}
 		}
 		else{
 			if(assignmentStatement.getSelector() == null){
-				if(expressionType ==COLOR || expressionType ==COLORFLOAT || expressionType ==INT || expressionType ==FLOAT){
-					isCompatible  =true;
-					if(expressionType==INT) assignmentStatement.getExpr().setCoerceTo(COLOR);
-					else if(expressionType==FLOAT) assignmentStatement.getExpr().setCoerceTo(COLORFLOAT);
+				if(expressionType == COLOR || expressionType == COLORFLOAT || expressionType == INT || expressionType == FLOAT){
+					isCompatible  = true;
+					if(expressionType == INT) assignmentStatement.getExpr().setCoerceTo(COLOR);
+					else if(expressionType == FLOAT) assignmentStatement.getExpr().setCoerceTo(COLORFLOAT);
 				}
 			}
 			else{
-				String X=assignmentStatement.getSelector().getX().getText();
-				String Y =assignmentStatement.getSelector().getY().getText();
-				check(symbolTable.lookup(X)==null && symbolTable.lookup(Y)==null, assignmentStatement,
+				String X = assignmentStatement.getSelector().getX().getText();
+				String Y = assignmentStatement.getSelector().getY().getText();
+				check(symbolTable.lookup(X) == null && symbolTable.lookup(Y) == null, assignmentStatement,
 						"variables in pixel selector ARE NOT COMPATIBLE WITH GLOBAL SCOPE");
-				// CAST TYPE
-
-				assignmentStatement.getSelector().getY().setType(INT);
-
 
 				assignmentStatement.getSelector().getX().setType(INT);
+				assignmentStatement.getSelector().getY().setType(INT);
 
 				check(assignmentStatement.getSelector().getX() instanceof IdentExpr &&
 								assignmentStatement.getSelector().getY() instanceof IdentExpr , assignmentStatement,
@@ -376,14 +358,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 				xDec.setInitialized(true);
 				yDec.setInitialized(true);
 
-				expressionType =(Type) assignmentStatement.getExpr().visit(this, arg);
+				expressionType = (Type) assignmentStatement.getExpr().visit(this, arg);
 				if (expressionType == COLORFLOAT || expressionType == FLOAT || expressionType == INT || expressionType == COLOR) {
 					isCompatible = true;
 					if (expressionType == INT || expressionType == COLORFLOAT || expressionType == FLOAT) {
 						assignmentStatement.getExpr().setCoerceTo(COLOR);
 					}
 				}
-
 				symbolTable.remove(X);
 				symbolTable.remove(Y);
 
@@ -391,7 +372,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 				yDec.setInitialized(false);
 			}
 		}
-
 		check(isCompatible, assignmentStatement, "not compatible: "
 				+ assignmentStatement.getName());
 
@@ -399,7 +379,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 		targetDecleration.setInitialized(true);
 		return null;
 	}
-
 
 	@Override
 	public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws Exception {
@@ -429,44 +408,43 @@ public class TypeCheckVisitor implements ASTVisitor {
 	}
 	@Override
 	public Object visitVarDeclaration(VarDeclaration declaration, Object arg) throws Exception {
-		Type declarativeType =(Type)declaration.getNameDef().visit(this, arg);
-		Type expressionType=null;
-		boolean isCompatible=false;
+		Type declarativeType = (Type)declaration.getNameDef().visit(this, arg);
+		Type expressionType = null;
+		boolean isCompatible = false;
 
-		if(declaration.getOp()!=null) {
+		if(declaration.getOp() != null) {
 			expressionType = (Type) declaration.getExpr().visit(this, arg);
 		}
-		if(declarativeType==IMAGE){
-			boolean isIMGorDIM = (expressionType==IMAGE || declaration.getNameDef().getDim()!=null);
+		if(declarativeType == IMAGE){
+			boolean isIMGorDIM = (expressionType == IMAGE || declaration.getNameDef().getDim() != null);
 			check(isIMGorDIM, declaration, " must be assigned either as an Image or have a Dimension");
 			isCompatible = true;
 		}
-		else if(declaration.getOp()==null){
+		else if(declaration.getOp() == null){
 			return null;
 		}
-		else if(declaration.getOp().getKind()==Kind.ASSIGN){
-			if(declarativeType==expressionType) isCompatible=true;
-			else if ((declarativeType==INT && expressionType==FLOAT) || (declarativeType==FLOAT && expressionType==INT) ||
-					(declarativeType==INT && expressionType==COLOR) || (declarativeType==COLOR && expressionType==INT)){
+		else if(declaration.getOp().getKind() == Kind.ASSIGN){
+			if(declarativeType == expressionType) isCompatible = true;
+			else if ((declarativeType == INT && expressionType == FLOAT) || (declarativeType == FLOAT && expressionType == INT) ||
+					(declarativeType == INT && expressionType == COLOR) || (declarativeType == COLOR && expressionType == INT)){
 				declaration.getExpr().setCoerceTo(declarativeType);
-				isCompatible=true;
+				isCompatible = true;
 			}
 		}
-		else if(declaration.getOp().getKind()==Kind.LARROW){
-			boolean isExpressionConsoleOrString = (expressionType==CONSOLE || expressionType==STRING);
+		else if(declaration.getOp().getKind() == Kind.LARROW){
+			boolean isExpressionConsoleOrString = (expressionType == CONSOLE || expressionType == STRING);
 			check(isExpressionConsoleOrString, declaration, "Right side must be CONSOLE or STRING");
 		}
 		declaration.getNameDef().setInitialized(true);
 		return null;
 	}
 
-
 	@Override
 	public Object visitProgram(Program program, Object arg) throws Exception {
 		//Save root of AST so return type can be accessed in return statements
 		root = program;
 
-		List<NameDef> params=program.getParams();
+		List<NameDef> params = program.getParams();
 		for (NameDef node : params) {
 			node.visit(this, arg);
 			node.setInitialized(true);
@@ -487,12 +465,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 		return nameDef.getType();
 	}
 
-
 	@Override
 	public Object visitNameDefWithDim(NameDefWithDim nameDefWithDim, Object arg) throws Exception {
-		//TODO:  implement this method
-
-
 		String name = nameDefWithDim.getName();
 		boolean inserted = symbolTable.insert(name, nameDefWithDim);
 		check(inserted, nameDefWithDim, "variable " + name + " already declared");
@@ -506,9 +480,9 @@ public class TypeCheckVisitor implements ASTVisitor {
 		check( height == INT, nameDefWithDim.getDim().getHeight(), "bad type supposed to be int");
 		check(width == INT , nameDefWithDim.getDim().getWidth(), "bad type supposed to be int");
 
-
 		return null;
 	}
+
 	@Override
 	public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws Exception {
 		Type returnType = root.getReturnType();  //This is why we save program in visitProgram.
@@ -526,5 +500,4 @@ public class TypeCheckVisitor implements ASTVisitor {
 		unaryExprPostfix.setCoerceTo(COLOR);
 		return Type.COLOR;
 	}
-
 }
