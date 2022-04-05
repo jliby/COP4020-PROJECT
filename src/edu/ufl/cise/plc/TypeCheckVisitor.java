@@ -179,6 +179,9 @@ public class TypeCheckVisitor implements ASTVisitor {
 			else if(leftType == Type.IMAGE && rightType == Type.IMAGE) {
 				returnType = Type.IMAGE;
 			}
+			else{
+				throw new TypeCheckException("Noncompatible binary expression types");
+			}
 		}
 		else if(op == Kind.TIMES || op == Kind.DIV || op == Kind.MOD) {
 			if(leftType == Type.INT && rightType == Type.INT) {
@@ -342,15 +345,15 @@ public class TypeCheckVisitor implements ASTVisitor {
 		}
 		else{
 			if(assignmentStatement.getSelector() == null){
-				if(expressionType ==COLOR || expressionType ==COLORFLOAT || expressionType ==INT || expressionType ==FLOAT){
-					isCompatible  =true;
-					if(expressionType==INT) assignmentStatement.getExpr().setCoerceTo(COLOR);
+				if(expressionType == COLOR || expressionType == COLORFLOAT || expressionType == INT || expressionType == FLOAT){
+					isCompatible  = true;
+					if(expressionType == INT) assignmentStatement.getExpr().setCoerceTo(COLOR);
 					else if(expressionType==FLOAT) assignmentStatement.getExpr().setCoerceTo(COLORFLOAT);
 				}
 			}
 			else{
-				String X=assignmentStatement.getSelector().getX().getText();
-				String Y =assignmentStatement.getSelector().getY().getText();
+				String X = assignmentStatement.getSelector().getX().getText();
+				String Y = assignmentStatement.getSelector().getY().getText();
 				check(symbolTable.lookup(X)==null && symbolTable.lookup(Y)==null, assignmentStatement,
 						"variables in pixel selector ARE NOT COMPATIBLE WITH GLOBAL SCOPE");
 				// CAST TYPE
@@ -390,6 +393,10 @@ public class TypeCheckVisitor implements ASTVisitor {
 				xDec.setInitialized(false);
 				yDec.setInitialized(false);
 			}
+		}
+
+		if(assignmentStatement.getExpr().getType() == targetType){
+			isCompatible = true;
 		}
 
 		check(isCompatible, assignmentStatement, "not compatible: "
@@ -461,6 +468,9 @@ public class TypeCheckVisitor implements ASTVisitor {
 		else if(declaration.getOp().getKind()==Kind.LARROW){
 			boolean isExpressionConsoleOrString = (expressionType==CONSOLE || expressionType==STRING);
 			check(isExpressionConsoleOrString, declaration, "Right side must be CONSOLE or STRING");
+			if(expressionType==CONSOLE){
+				declaration.getExpr().setCoerceTo(declarativeType);
+			}
 		}
 		declaration.getNameDef().setInitialized(true);
 		return null;
