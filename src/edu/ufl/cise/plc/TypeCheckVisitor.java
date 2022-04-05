@@ -423,14 +423,15 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 		Type rhsType = (Type) readStatement.getSource().visit(this, arg);
 
-		check(rhsType == Type.CONSOLE || rhsType == Type.STRING, readStatement, "source (rhs) must be console or string");
+		check( rhsType == Type.CONSOLE || rhsType == Type.STRING, readStatement, "source (rhs) must be console or string");
 
-		if (rhsType != STRING ) {
+		if (rhsType == CONSOLE ) {
 			readStatement.getSource().setCoerceTo(readStatement.getTargetDec().getType());
 		}
+
 		readStatement.getTargetDec().setInitialized(true);
 
-	return targetType;
+		return targetType;
 	}
 	@Override
 	public Object visitVarDeclaration(VarDeclaration declaration, Object arg) throws Exception {
@@ -502,8 +503,12 @@ public class TypeCheckVisitor implements ASTVisitor {
 		boolean inserted = symbolTable.insert(name, nameDefWithDim);
 		check(inserted, nameDefWithDim, "variable " + name + " already declared");
 
-		check(symbolTable.lookup(nameDefWithDim.getDim().getWidth().getText()) != null, nameDefWithDim.getDim().getWidth(), "not declared width");
-		check(symbolTable.lookup(nameDefWithDim.getDim().getHeight().getText()) != null, nameDefWithDim.getDim().getHeight(), "not declared height");
+		if(nameDefWithDim.getDim().getWidth().getFirstToken().getKind() == Kind.IDENT){
+			check(symbolTable.lookup(nameDefWithDim.getDim().getWidth().getText()) != null, nameDefWithDim.getDim().getWidth(), "not declared width");
+		}
+		if(nameDefWithDim.getDim().getHeight().getFirstToken().getKind() == Kind.IDENT){
+			check(symbolTable.lookup(nameDefWithDim.getDim().getHeight().getText()) != null, nameDefWithDim.getDim().getHeight(), "not declared height");
+		}
 
 		Type width = (Type) nameDefWithDim.getDim().getWidth().visit(this, arg);
 		Type height = (Type) nameDefWithDim.getDim().getHeight().visit(this, arg);
