@@ -237,39 +237,39 @@ class Assignment5TestStarter {
 		checkResult(input, params, a + (b * 2) + c);
 	}
 
-//	@Test
-//	//This test reads from the console.  The tester should see that displayed result is same as entered.
-//	void testReadInt0() throws Exception {
-//		String input = """
-//				int testRead0()
-//				int x;
-//				x <- console;
-//				^ x;
-//				         """;
-//		displayResult(input, null);
-//	}
+	@Test
+	//This test reads from the console.  The tester should see that displayed result is same as entered.
+	void testReadInt0() throws Exception {
+		String input = """
+				int testRead0()
+				int x;
+				x <- console;
+				^ x;
+				         """;
+		displayResult(input, null);
+	}
 
 
-//	@Test
-//	void testMultipleConsoleIO() throws Exception {
-//		String input = """
-//				int testMultipleWrites()
-//				int x0 = 34;
-//				int x1 = 56;
-//				write x0 + x1 -> console;
-//				int x3 ;
-//				x3 <- console;
-//				write "x3="-> console;
-//				write x3 -> console;
-//				int x4 = x0;
-//				x4 = (x4 + x1)/3;
-//				write "  x4="-> console;
-//				write x4 -> console;
-//				^x4;
-//				""";
-//		checkResult(input, (34+56)/3);
-//	}
-//
+	@Test
+	void testMultipleConsoleIO() throws Exception {
+		String input = """
+				int testMultipleWrites()
+				int x0 = 34;
+				int x1 = 56;
+				write x0 + x1 -> console;
+				int x3 ;
+				x3 <- console;
+				write "x3="-> console;
+				write x3 -> console;
+				int x4 = x0;
+				x4 = (x4 + x1)/3;
+				write "  x4="-> console;
+				write x4 -> console;
+				^x4;
+				""";
+		checkResult(input, (34+56)/3);
+	}
+
 
 
 }

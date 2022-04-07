@@ -296,7 +296,7 @@ public class CodeGenVisitor implements ASTVisitor {
         readStatement.getSource().visit(this, res.getString());
         //if reading from console
         Types.Type targetType = readStatement.getTargetDec().getType();
-        res.readConsoleExpr(StringToLowercase(targetType));
+        res.readConsoleExpr((targetType));
         return res.getString();
     }
 
