@@ -5,7 +5,7 @@
  *
  */
 
-package edu.ufl.cise.plc.javaCompilerClassLoader;
+package edu.ufl.cise.plc.runtime.javaCompilerClassLoader;
 
 import java.net.URI;
 import javax.tools.SimpleJavaFileObject;
