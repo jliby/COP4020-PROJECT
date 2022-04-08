@@ -36,7 +36,6 @@ public class CodeGenVisitor implements ASTVisitor {
 
         void coerceType(Object type) {
             str.append("(");
-            System.out.println(type.toString());
 
             str.append(type);
             str.append(")");
@@ -154,9 +153,11 @@ public class CodeGenVisitor implements ASTVisitor {
         if (intLitExpr.getCoerceTo() != null && intLitExpr.getCoerceTo() != Types.Type.INT){
             type = intLitExpr.getType();
             res.coerceType((StringToLowercase(type)));
+            System.out.println("test" + (StringToLowercase(type)).toString());
 
         } else {
-           type = intLitExpr.getCoerceTo();
+
+            type = intLitExpr.getCoerceTo();
 
         }
         res.add(intLitExpr.getValue());
@@ -226,12 +227,14 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type = binaryExpr.getType();
-        System.out.println(binaryExpr.getType().toString());
         if(type == Types.Type.IMAGE) {
             throw new UnsupportedOperationException("N/A");
         }
         else {
-            res.coerceType(StringToLowercase(type));
+
+//            res.coerceType(StringToLowercase(binaryExpr.getRight().getType()));
+
+            System.out.println();
             res.add("(");
             System.out.println(binaryExpr.getOp().getText());
             if (binaryExpr.getRight().getType() == Types.Type.STRING) {
@@ -277,6 +280,7 @@ public class CodeGenVisitor implements ASTVisitor {
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
+        res.add("(");
         conditionalExpr.getCondition().visit(this, res.getString());
         // add ?
         res.ternaryConditionalOperator();
@@ -284,6 +288,7 @@ public class CodeGenVisitor implements ASTVisitor {
         // add :
         res.ternaryResult();
         conditionalExpr.getFalseCase().visit(this, res.getString());
+        res.add(")");
         return res.getString();
     }
 
