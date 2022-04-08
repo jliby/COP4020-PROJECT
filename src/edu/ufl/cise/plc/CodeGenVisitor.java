@@ -12,9 +12,6 @@ public class CodeGenVisitor implements ASTVisitor {
         this.pkg = pkg_name;
     }
 
-    public static void main(String[] args){
-
-    }
 
     class StringBuilderDelegate {
         StringBuilder  str;
@@ -35,8 +32,12 @@ public class CodeGenVisitor implements ASTVisitor {
             }
 
         }
+
+
         void coerceType(Object type) {
             str.append("(");
+            System.out.println(type.toString());
+
             str.append(type);
             str.append(")");
         }
@@ -51,7 +52,7 @@ public class CodeGenVisitor implements ASTVisitor {
         void ternaryResult() {
             str.append(":");
         }
-        
+
         StringBuilder getString() {
             return str;
         }
@@ -112,8 +113,7 @@ public class CodeGenVisitor implements ASTVisitor {
             default:
                 return null;
         }
-//        if (type == Types.Type.INT)
-//            return "Integer";
+
 
     }
 
@@ -124,7 +124,6 @@ public class CodeGenVisitor implements ASTVisitor {
             return type.toString().toLowerCase();
     }
 
-//    Java literal corresponding to value (i.e. true or false)
     @Override
     public Object visitBooleanLitExpr(BooleanLitExpr booleanLitExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
@@ -151,8 +150,15 @@ public class CodeGenVisitor implements ASTVisitor {
     @Override
     public Object visitIntLitExpr(IntLitExpr intLitExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
-        Types.Type type = (intLitExpr.getCoerceTo() != null && intLitExpr.getCoerceTo() != Types.Type.INT) ? intLitExpr.getCoerceTo() : intLitExpr.getType();
-        if (intLitExpr.getCoerceTo() != null && intLitExpr.getCoerceTo() != Types.Type.INT)  res.coerceType((StringToLowercase(type)));
+        Types.Type type;
+        if (intLitExpr.getCoerceTo() != null && intLitExpr.getCoerceTo() != Types.Type.INT){
+            type = intLitExpr.getType();
+            res.coerceType((StringToLowercase(type)));
+
+        } else {
+           type = intLitExpr.getCoerceTo();
+
+        }
         res.add(intLitExpr.getValue());
         return res.str;
     }
@@ -167,8 +173,16 @@ public class CodeGenVisitor implements ASTVisitor {
     @Override
     public Object visitFloatLitExpr(FloatLitExpr floatLitExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
-        Types.Type type = (floatLitExpr.getCoerceTo() != null && floatLitExpr.getCoerceTo() != Types.Type.FLOAT) ? floatLitExpr.getCoerceTo() : floatLitExpr.getType();
-        if (floatLitExpr.getCoerceTo() != null && floatLitExpr.getCoerceTo() != Types.Type.FLOAT) res.coerceType((StringToLowercase(type)));
+        Types.Type type;
+        if (floatLitExpr.getCoerceTo() != null && floatLitExpr.getCoerceTo() != Types.Type.FLOAT){
+
+            type = floatLitExpr.getCoerceTo();
+
+        } else {
+            type = floatLitExpr.getType();
+            res.coerceType((StringToLowercase(type)));
+
+        }
         res.add(floatLitExpr.getValue());
         res.add("f");
         return res.str;
@@ -199,7 +213,9 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitUnaryExpr(UnaryExpr unaryExpression, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         //  op
-        res.add(unaryExpression.getOp());
+        res.add(" ");
+
+        res.add(unaryExpression.getOp().getText());
         //  expr
         unaryExpression.getExpr().visit(this, res.str);
         return res.str;
@@ -233,6 +249,7 @@ public class CodeGenVisitor implements ASTVisitor {
         Types.Type type = identExpr.getCoerceTo() != null ? identExpr.getCoerceTo() : identExpr.getType();
         //add cast type if applicable
         if (identExpr.getCoerceTo() != null && identExpr.getCoerceTo() != type) {
+
             res.coerceType(StringToLowercase(identExpr.getCoerceTo()));
         }
         res.add(identExpr.getText());
@@ -342,6 +359,7 @@ public class CodeGenVisitor implements ASTVisitor {
         StringBuilder sb = (StringBuilder) arg;
         String typeLowerCase = StringToLowercase(nameDefintion.getType());
         sb.append(typeLowerCase).append(" ").append(nameDefintion.getName());
+
         return sb;
     }
 
