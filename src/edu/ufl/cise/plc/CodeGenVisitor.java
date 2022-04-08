@@ -232,7 +232,8 @@ public class CodeGenVisitor implements ASTVisitor {
         }
         else {
 
-//            res.coerceType(StringToLowercase(binaryExpr.getRight().getType()));
+        res.coerceType(StringToLowercase(type));
+        System.out.println(type);
 
             System.out.println();
             res.add("(");
