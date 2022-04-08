@@ -157,7 +157,6 @@ public class CodeGenVisitor implements ASTVisitor {
         if (intLitExpr.getCoerceTo() != null && intLitExpr.getCoerceTo() != Types.Type.INT){
             type = intLitExpr.getType();
             res.coerceType((StringToLowercase(type)));
-            System.out.println("test" + (StringToLowercase(type)).toString());
 
         } else {
 
@@ -248,12 +247,9 @@ public class CodeGenVisitor implements ASTVisitor {
         }
         else {
 
-            System.out.println("type" + type);
 
 
-            System.out.println();
             res.add("(");
-            System.out.println(binaryExpr.getOp().getText());
             if (binaryExpr.getRight().getType() == Types.Type.STRING) {
                 if (binaryExpr.getOp().getText() == "!=") {
                     res.add("!");
@@ -325,7 +321,6 @@ public class CodeGenVisitor implements ASTVisitor {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         // add name =
 
-        System.out.println("Start" + assignmentStatement.getTargetDec().getType());
         res.setAssignment(assignmentStatement.getName());
         // add  expr
         assignmentStatement.getExpr().visit(this, res.getString());
@@ -426,6 +421,7 @@ public class CodeGenVisitor implements ASTVisitor {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         declaration.getNameDef().visit(this, res.getString());
         if (declaration.getExpr() != null) {
+            global_type = declaration.getType();
             res.add("=");
             declaration.getExpr().visit(this, res.getString());
         } else {
