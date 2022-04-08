@@ -137,9 +137,9 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         boolean start = true;
-        res.multiLine(start);
+        res.add("\"");;
         res.add(stringLitExpr.getValue());
-        res.multiLine(!start);
+        res.add("\"");;
 
         return res.str;
     }
@@ -226,16 +226,33 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type = binaryExpr.getType();
-
+        System.out.println(binaryExpr.getType().toString());
         if(type == Types.Type.IMAGE) {
             throw new UnsupportedOperationException("N/A");
         }
         else {
             res.coerceType(StringToLowercase(type));
             res.add("(");
+            System.out.println(binaryExpr.getOp().getText());
+            if (binaryExpr.getRight().getType() == Types.Type.STRING) {
+                if (binaryExpr.getOp().getText() == "!=") {
+                    res.add("!");
+                }
+            }
+
             binaryExpr.getLeft().visit(this, res.str);
-            res.add(binaryExpr.getOp().getText());
-            binaryExpr.getRight().visit(this, res.str);
+
+
+            if ((binaryExpr.getOp().getText() == "!=" || binaryExpr.getOp().getText() == "==") && binaryExpr.getRight().getType() == Types.Type.STRING ) {
+                res.add(".equals(");
+                binaryExpr.getRight().visit(this, res.str);
+
+                res.add(")");
+
+            } else {
+                res.add(binaryExpr.getOp().getText());
+                binaryExpr.getRight().visit(this, res.str);
+            }
             res.add(")");
         }
 
