@@ -4,7 +4,11 @@ import edu.ufl.cise.plc.ast.*;
 
 import java.util.Locale;
 
+import static edu.ufl.cise.plc.ast.Types.Type.VOID;
+
+
 public class CodeGenVisitor implements ASTVisitor {
+    Types.Type global_type = VOID;
 
     private String pkg;
 
@@ -157,7 +161,12 @@ public class CodeGenVisitor implements ASTVisitor {
 
         } else {
 
-            type = intLitExpr.getCoerceTo();
+            if (global_type != VOID) {
+                intLitExpr.setCoerceTo(global_type);
+                type = intLitExpr.getCoerceTo();
+                res.coerceType((StringToLowercase(type)));
+            }
+
 
         }
         res.add(intLitExpr.getValue());
@@ -177,11 +186,18 @@ public class CodeGenVisitor implements ASTVisitor {
         Types.Type type;
         if (floatLitExpr.getCoerceTo() != null && floatLitExpr.getCoerceTo() != Types.Type.FLOAT){
 
-            type = floatLitExpr.getCoerceTo();
 
-        } else {
             type = floatLitExpr.getType();
             res.coerceType((StringToLowercase(type)));
+
+        } else {
+
+
+            if (global_type != VOID) {
+                floatLitExpr.setCoerceTo(global_type);
+                type = floatLitExpr.getCoerceTo();
+                res.coerceType((StringToLowercase(type)));
+            }
 
         }
         res.add(floatLitExpr.getValue());
@@ -232,8 +248,9 @@ public class CodeGenVisitor implements ASTVisitor {
         }
         else {
 
-        res.coerceType(StringToLowercase(type));
-        System.out.println(type);
+            System.out.println("type" + type);
+
+            res.coerceType(StringToLowercase(type));
 
             System.out.println();
             res.add("(");
@@ -308,6 +325,8 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         // add name =
+
+        System.out.println("Start" + assignmentStatement.getTargetDec().getType());
         res.setAssignment(assignmentStatement.getName());
         // add  expr
         assignmentStatement.getExpr().visit(this, res.getString());
@@ -381,6 +400,7 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitNameDef(NameDef nameDefintion, Object arg) throws Exception {
         StringBuilder sb = (StringBuilder) arg;
         String typeLowerCase = StringToLowercase(nameDefintion.getType());
+        global_type = nameDefintion.getType();
         sb.append(typeLowerCase).append(" ").append(nameDefintion.getName());
 
         return sb;
