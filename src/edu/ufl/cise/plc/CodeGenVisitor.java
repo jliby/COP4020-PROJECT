@@ -250,7 +250,6 @@ public class CodeGenVisitor implements ASTVisitor {
 
             System.out.println("type" + type);
 
-            res.coerceType(StringToLowercase(type));
 
             System.out.println();
             res.add("(");
