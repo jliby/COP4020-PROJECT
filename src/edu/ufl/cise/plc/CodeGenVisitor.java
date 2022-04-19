@@ -156,7 +156,7 @@ public class CodeGenVisitor implements ASTVisitor {
         Types.Type type;
         if (intLitExpr.getCoerceTo() != null && intLitExpr.getCoerceTo() != Types.Type.INT){
             type = intLitExpr.getType();
-            res.coerceType((StringToLowercase(type)));
+           res.coerceType((StringToLowercase(type)));
 
         } else {
 
@@ -195,7 +195,7 @@ public class CodeGenVisitor implements ASTVisitor {
             if (global_type != VOID) {
                 floatLitExpr.setCoerceTo(global_type);
                 type = floatLitExpr.getCoerceTo();
-                res.coerceType((StringToLowercase(type)));
+              // res.coerceType((StringToLowercase(type)));
             }
 
         }
@@ -249,7 +249,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
 
 
-            res.add("(");
+//            res.add("(");
             if (binaryExpr.getRight().getType() == Types.Type.STRING) {
                 if (binaryExpr.getOp().getText() == "!=") {
                     res.add("!");
@@ -269,7 +269,7 @@ public class CodeGenVisitor implements ASTVisitor {
                 res.add(binaryExpr.getOp().getText());
                 binaryExpr.getRight().visit(this, res.str);
             }
-            res.add(")");
+//            res.add(")");
         }
 
         return res.str;
@@ -320,8 +320,8 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         // add name =
-
         res.setAssignment(assignmentStatement.getName());
+
         // add  expr
         assignmentStatement.getExpr().visit(this, res.getString());
         return res.getString();
@@ -423,7 +423,11 @@ public class CodeGenVisitor implements ASTVisitor {
         if (declaration.getExpr() != null) {
             global_type = declaration.getType();
             res.add("=");
+            res.add("(" + StringToLowercase(global_type) + ")");
+            res.add("(");
+
             declaration.getExpr().visit(this, res.getString());
+            res.add(")");
         } else {
             return res.getString();
 
