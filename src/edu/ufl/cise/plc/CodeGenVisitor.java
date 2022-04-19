@@ -69,7 +69,8 @@ public class CodeGenVisitor implements ASTVisitor {
 
         void print(Object obj) {
             str.append("ConsoleIO.console.println(");
-            str.append(obj);
+            String text = obj.toString().replace("\n", "").replace("\r", "");
+            str.append(text);
             str.append(")");
         }
         void readName(Object name, Object targetType) {
@@ -186,16 +187,17 @@ public class CodeGenVisitor implements ASTVisitor {
         if (floatLitExpr.getCoerceTo() != null && floatLitExpr.getCoerceTo() != Types.Type.FLOAT){
 
 
-            type = floatLitExpr.getType();
+
+            floatLitExpr.setCoerceTo(global_type);
+            type = floatLitExpr.getCoerceTo();
             res.coerceType((StringToLowercase(type)));
 
         } else {
 
 
             if (global_type != VOID) {
-                floatLitExpr.setCoerceTo(global_type);
-                type = floatLitExpr.getCoerceTo();
-              // res.coerceType((StringToLowercase(type)));
+                type = floatLitExpr.getType();
+                res.coerceType((StringToLowercase(type)));
             }
 
         }
@@ -249,7 +251,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
 
 
-//            res.add("(");
+           res.add("(");
             if (binaryExpr.getRight().getType() == Types.Type.STRING) {
                 if (binaryExpr.getOp().getText() == "!=") {
                     res.add("!");
@@ -269,7 +271,7 @@ public class CodeGenVisitor implements ASTVisitor {
                 res.add(binaryExpr.getOp().getText());
                 binaryExpr.getRight().visit(this, res.str);
             }
-//            res.add(")");
+           res.add(")");
         }
 
         return res.str;
@@ -321,9 +323,12 @@ public class CodeGenVisitor implements ASTVisitor {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         // add name =
         res.setAssignment(assignmentStatement.getName());
+        res.add("(" + StringToLowercase(assignmentStatement.getTargetDec().getType())  +") (");
 
         // add  expr
         assignmentStatement.getExpr().visit(this, res.getString());
+
+        res.add(")");
         return res.getString();
     }
 
