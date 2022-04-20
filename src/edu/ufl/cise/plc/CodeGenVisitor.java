@@ -69,8 +69,6 @@ public class CodeGenVisitor implements ASTVisitor {
 
         void print(Object obj) {
             str.append("ConsoleIO.console.println(");
-            String text = obj.toString().replace("\n", "").replace("\r", "");
-            str.append(text);
             str.append(")");
         }
         void readName(Object name, Object targetType) {
@@ -141,9 +139,9 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         boolean start = true;
-        res.add("\"");;
+        res.add("\"\"\"\n");
         res.add(stringLitExpr.getValue());
-        res.add("\"");;
+        res.add("\"\"\"");;
 
         return res.str;
     }
