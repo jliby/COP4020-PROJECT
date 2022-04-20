@@ -4,11 +4,13 @@ import edu.ufl.cise.plc.ast.*;
 
 import java.util.Locale;
 
+import static edu.ufl.cise.plc.ast.Types.Type.IMAGE;
 import static edu.ufl.cise.plc.ast.Types.Type.VOID;
 
 
 public class CodeGenVisitor implements ASTVisitor {
     Types.Type global_type = VOID;
+    boolean fileUrlIOEnd = false;
 
     private String pkg;
 
@@ -94,6 +96,10 @@ public class CodeGenVisitor implements ASTVisitor {
         }
 
         void returnStatement() {
+            if (fileUrlIOEnd) {
+                str.append("FileURLIO.closeFiles();");
+                str.append("\n");
+            }
             str.append("return ");
 
         }
@@ -307,7 +313,16 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws Exception {
-        throw new UnsupportedOperationException("n/a");
+        System.out.println("workings");
+
+        StringBuilderDelegate res = new StringBuilderDelegate(arg);
+        System.out.println("workings");
+        dimension.getWidth().visit(this, res.getString());
+        res.add(",");
+        dimension.getHeight().visit(this, res.getString());
+
+        return res.getString();
+
     }
 
     @Override
@@ -370,12 +385,21 @@ public class CodeGenVisitor implements ASTVisitor {
         StringBuilder str = new StringBuilder();
         str.append("package ").append(pkg).append(";\n");
         str.append("import edu.ufl.cise.plc.runtime.*; \n");
+        str.append("import edu.ufl.cise.plc.runtime.FileURLIO; \n");
+        str.append("import java.awt.image.BufferedImage; \n");
+        str.append("import edu.ufl.cise.plc.runtime.ImageOps; \n");
         str.append("public class ").append(program.getName()).append("{\n");
 
 
         String typeLowerCase = StringToLowercase(program.getReturnType());
 
-        str.append("public static ").append(typeLowerCase).append(" apply(");
+        str.append("public static ");
+        if (typeLowerCase.equals("image")) {
+            str.append("BufferedImage");
+        } else {
+            str.append(typeLowerCase);
+        }
+        str.append(" apply(");
         for (int i = 0; i < program.getParams().size(); i++){
             program.getParams().get(i).visit(this, str);
             if(i != program.getParams().size() -1) str.append(", ");
@@ -395,6 +419,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDef(NameDef nameDefintion, Object arg) throws Exception {
+
         StringBuilder sb = (StringBuilder) arg;
         String typeLowerCase = StringToLowercase(nameDefintion.getType());
         global_type = nameDefintion.getType();
@@ -405,7 +430,15 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDefWithDim(NameDefWithDim nameDefWithDim, Object arg) throws Exception {
-        throw new UnsupportedOperationException("N/A");
+        StringBuilderDelegate res = new StringBuilderDelegate(arg);
+        String typeLowerCase = StringToLowercase(nameDefWithDim.getType());
+        global_type = nameDefWithDim.getType();
+
+        res.add("BufferedImage");
+        res.add(" ");
+        res.add(nameDefWithDim.getName());
+
+        return res.getString();
     }
 
     @Override
@@ -423,23 +456,34 @@ public class CodeGenVisitor implements ASTVisitor {
 
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         declaration.getNameDef().visit(this, res.getString());
+
         if (declaration.getExpr() != null) {
-            global_type = declaration.getType();
-            res.add("=");
-            res.add("(" + StringToLowercase(global_type) + ")");
-            res.add("(");
+            if (global_type == IMAGE) {
+                fileUrlIOEnd = true;
+                res.add(" = ");
+                res.add("FileURLIO.readImage(");
 
-            declaration.getExpr().visit(this, res.getString());
-            res.add(")");
-        } else {
-            return res.getString();
+                declaration.getExpr().visit(this, res.getString());
+                res.add(",");
+                declaration.getDim().visit(this, arg);
+                res.add(")");
+            } else {
+                global_type = declaration.getType();
+                res.add("=");
+                res.add("(" + StringToLowercase(global_type) + ")");
+                res.add("(");
 
+                declaration.getExpr().visit(this, res.getString());
+                res.add(")");
+            }
         }
+
         return res.getString();
     }
 
     @Override
     public Object visitUnaryExprPostfix(UnaryExprPostfix unaryExprPostfix, Object arg) throws Exception {
+        System.out.println("");
         throw new UnsupportedOperationException("N/A");
     }
 }
