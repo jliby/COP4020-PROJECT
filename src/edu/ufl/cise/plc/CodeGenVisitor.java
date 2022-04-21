@@ -215,7 +215,7 @@ public class CodeGenVisitor implements ASTVisitor {
     @Override
     public Object visitColorConstExpr(ColorConstExpr colorConstExpr, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
-        res.add("ColorTuple.unpack(Color." + colorConstExpr.getText() + ".getRGB()");
+        res.add("ColorTuple.unpack(Color." + colorConstExpr.getText() + ".getRGB())");
         return res.str;
     }
 
@@ -256,6 +256,8 @@ public class CodeGenVisitor implements ASTVisitor {
         Types.Type type = binaryExpr.getType();
         Types.Type leftType = binaryExpr.getLeft().getType();
         Types.Type rightType = binaryExpr.getRight().getType();
+        System.out.println("ENTERED BINARY IMAGE " + binaryExpr.getLeft() + " : " + binaryExpr.getRight());
+
 
         if(leftType == COLOR && rightType == COLOR){
             //throw new UnsupportedOperationException("N/A");
@@ -266,7 +268,10 @@ public class CodeGenVisitor implements ASTVisitor {
         }
         else if (leftType == IMAGE && rightType == IMAGE){
             //throw new UnsupportedOperationException("N/A");
-            System.out.println("BOTH ARE IMAGES");
+            res.add("(ImageOps.binaryImageImageOp(");
+            res.add("ImageOps.OP." + binaryExpr.getOp().getKind().name() + ",");
+            res.add(binaryExpr.getLeft().getText() + ",");
+            res.add(binaryExpr.getRight().getText() + "))");
         }
         else {
             res.add("(");
@@ -524,6 +529,8 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitUnaryExprPostfix(UnaryExprPostfix unaryExprPostfix, Object arg) throws Exception {
-        throw new UnsupportedOperationException("N/A");
+        StringBuilderDelegate res = new StringBuilderDelegate(arg);
+        res.add("BufferedImage.getRGB("+unaryExprPostfix.getSelector().getX().getText()+","+unaryExprPostfix.getSelector().getY().getText()+")");
+        return res.str;
     }
 }
