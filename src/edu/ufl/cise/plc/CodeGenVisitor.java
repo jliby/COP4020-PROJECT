@@ -45,6 +45,7 @@ public class CodeGenVisitor implements ASTVisitor {
         void coerceType(Object type) {
             str.append("(");
             // fix later
+
             if(type.equals("color")) {
                 str.append("int");
             } else {
@@ -415,6 +416,7 @@ public class CodeGenVisitor implements ASTVisitor {
             res.add(",");
             colorExpr.visit(this, res.str);
             res.add(")");
+
         }
         else if((leftType == IMAGE && rightType == INT) || (leftType == INT && rightType == IMAGE)) {
 
@@ -423,7 +425,7 @@ public class CodeGenVisitor implements ASTVisitor {
             Expr imageExpr = (leftType == IMAGE) ? left : right;
             Expr intExpr = (leftType == INT) ? left : right;
 
-            res.add("(");
+//            res.add("(");
             res.add("ImageOps.binaryImageScalarOp(");
             res.add(switch(opKind) {
                 case PLUS -> "ImageOps.OP.PLUS";
@@ -438,6 +440,7 @@ public class CodeGenVisitor implements ASTVisitor {
             res.add(",");
             intExpr.visit(this, res.str);
             res.add(")");
+
         }
         else {
             res.add("(");
@@ -477,6 +480,7 @@ public class CodeGenVisitor implements ASTVisitor {
 //        else{
 //            res.add(identExpr.getText());
 //        }
+
         res.add(identExpr.getText());
 
         return res.str;
@@ -573,10 +577,16 @@ public class CodeGenVisitor implements ASTVisitor {
                 res.add(")");
             }
         }
-        else if(assignmentStatement.getExpr().getCoerceTo() != COLOR) {
+        else if(assignmentStatement.getExpr().getType() == COLOR) {
 
             Object[] args = {res.str, assignmentStatement.getName()};
-            assignmentStatement.getSelector().visit(this, args);
+            if(args == null) {
+                assignmentStatement.getSelector().visit(this, res.str);
+
+            } else {
+                assignmentStatement.getSelector().visit(this, args);
+
+            }
 
             res.add("ImageOps.setColor(");
             res.add(assignmentStatement.getName());
@@ -721,6 +731,12 @@ public class CodeGenVisitor implements ASTVisitor {
             global_type = nameDefintion.getType();
             sb.append("ColorTuple").append(" ").append(nameDefintion.getName());
         }
+        else if(nameDefintion.getType() == IMAGE){
+            global_type = nameDefintion.getType();
+            sb.append("BufferedImage").append(" ").append(nameDefintion.getName());
+        }
+
+
         else{
             String typeLowerCase = StringToLowercase(nameDefintion.getType());
             global_type = nameDefintion.getType();
