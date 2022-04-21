@@ -580,33 +580,30 @@ public class CodeGenVisitor implements ASTVisitor {
         else if(assignmentStatement.getExpr().getType() == COLOR) {
 
             Object[] args = {res.str, assignmentStatement.getName()};
-            if(args == null) {
-                assignmentStatement.getSelector().visit(this, res.str);
-
-            } else {
+            if(assignmentStatement.getSelector() != null) {
                 assignmentStatement.getSelector().visit(this, args);
 
-            }
 
-            res.add("ImageOps.setColor(");
-            res.add(assignmentStatement.getName());
-            res.add(",");
-            res.add(assignmentStatement.getSelector().getX().getText());
-            res.add(",");
-            res.add(assignmentStatement.getSelector().getY().getText());
-            res.add(",");
+                res.add("ImageOps.setColor(");
+                res.add(assignmentStatement.getName());
+                res.add(",");
+                res.add(assignmentStatement.getSelector().getX().getText());
+                res.add(",");
+                res.add(assignmentStatement.getSelector().getY().getText());
+                res.add(",");
 
-            //If the expression is an int coerced to a color, make a colortuple with it
-            if(assignmentStatement.getExpr().getCoerceTo() == INT) {
-                res.add("new ColorTuple(");
-                assignmentStatement.getExpr().visit(this, res.str);
+                //If the expression is an int coerced to a color, make a colortuple with it
+                if (assignmentStatement.getExpr().getCoerceTo() == INT) {
+                    res.add("new ColorTuple(");
+                    assignmentStatement.getExpr().visit(this, res.str);
+                    res.add(")");
+                } else {
+                    assignmentStatement.getExpr().visit(this, res.getString());
+                }
+
+
                 res.add(")");
             }
-            else {
-                assignmentStatement.getExpr().visit(this, res.getString());
-            }
-
-            res.add(")");
         }
         else if(assignmentStatement.getExpr().getCoerceTo() == INT) {
             res.add(assignmentStatement.getName());
@@ -803,7 +800,7 @@ public class CodeGenVisitor implements ASTVisitor {
                         res.add(",");
                         res.add(declaration.getDim().getHeight().getText());
                         res.add(",");
-                        declaration.visit(this, res.str);
+                        declaration.getExpr().visit(this, res.str);
                         res.add(")");
                     }
                     else {
