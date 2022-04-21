@@ -54,7 +54,7 @@ class Assignment6StarterTest {
 	}
 
 	/**
-	 * This is the same as show(BufferedImage) except that the image is placed in a different location: 
+	 * This is the same as show(BufferedImage) except that the image is placed in a different location:
 	 * [0,0] is in center of screen rather than the upper left corner.
 	 */
 
@@ -179,10 +179,10 @@ class Assignment6StarterTest {
 		// run PLCLang program
 		Object[] params = { size };
 		show(check(input, params, refImage));
-	    //If you don't want to compare with ref image use show(exec(input,params));
+		//If you don't want to compare with ref image use show(exec(input,params));
 	}
-	
-	
+
+
 	@Test
 	void lectureExample5() throws Exception {
 		String input = """
@@ -192,7 +192,7 @@ class Assignment6StarterTest {
 				   f[x,y] = if (y > stripSize) YELLOW else BLUE fi;
 				   ^f;
 				   """;
-		int size = 1024;		
+		int size = 1024;
 		BufferedImage refImage = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
 		for (int x = 0; x < size; x++) {
 			for (int y = 0; y < size; y++) {
@@ -202,7 +202,7 @@ class Assignment6StarterTest {
 		Object[] params = { size };
 		show(check(input, params, refImage));
 	}
-	
+
 	@Test
 	void lectureExample6() throws Exception {
 		String input = """
@@ -229,8 +229,8 @@ class Assignment6StarterTest {
 		//this image should be the same size, but darker than inputImage
 		show(check(input, params, refImage));
 	}
-	
-	
+
+
 
 
 	@Test
@@ -252,7 +252,7 @@ class Assignment6StarterTest {
 				blue[x,y] = BLUE;
 				image[500,500] green;
 				green[a,b] = GREEN;
-				image[500,500] teal;F
+				image[500,500] teal;
 				teal[x,y] = blue[x,y] + green[x,y];
 				^teal;
 				""";
