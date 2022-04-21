@@ -44,8 +44,13 @@ public class CodeGenVisitor implements ASTVisitor {
 
         void coerceType(Object type) {
             str.append("(");
+            // fix later
+            if(type.equals("color")) {
+                str.append("int");
+            } else {
+                str.append(type);
 
-            str.append(type);
+            }
             str.append(")");
         }
         void readConsole() {
@@ -54,10 +59,11 @@ public class CodeGenVisitor implements ASTVisitor {
         }
 
         void ternaryConditionalOperator() {
-            str.append("?");
+            str.append("?\n\t\t\t\t");
+
         }
         void ternaryResult() {
-            str.append(":");
+            str.append(":\n\t\t\t\t");
         }
 
         StringBuilder getString() {
@@ -128,11 +134,21 @@ public class CodeGenVisitor implements ASTVisitor {
 
     }
 
-    public String StringToLowercase(Types.Type type){
-        if (type == Types.Type.STRING )
+    public String StringToLowercase(Types.Type type) throws Exception {
+
+        String str;
+        if (type == Types.Type.STRING ) {
             return "String";
-        else
-            return type.toString().toLowerCase();
+        }
+        else {
+             if (type == COLOR) {
+                str = toJavaType(type);
+                 System.out.println("TYPE" + type.toString());
+                return str;
+            }
+            return type.toString().toLowerCase(Locale.ROOT);
+
+        }
     }
 
     @Override
@@ -160,6 +176,7 @@ public class CodeGenVisitor implements ASTVisitor {
 //If coerceTo != null and coerceTo != INT, add cast to coerced type.
     @Override
     public Object visitIntLitExpr(IntLitExpr intLitExpr, Object arg) throws Exception {
+        System.out.println("visit int lit expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type;
         if (intLitExpr.getCoerceTo() != null && intLitExpr.getCoerceTo() != Types.Type.INT){
@@ -169,9 +186,21 @@ public class CodeGenVisitor implements ASTVisitor {
         } else {
 
             if (global_type != VOID) {
-                intLitExpr.setCoerceTo(global_type);
-                type = intLitExpr.getCoerceTo();
-                res.coerceType((StringToLowercase(type)));
+                if (global_type == COLOR) {
+                    intLitExpr.setCoerceTo(global_type);
+                    type = intLitExpr.getType();
+                    res.coerceType((StringToLowercase(type)));
+                }
+               else if (global_type == IMAGE) {
+                    intLitExpr.setCoerceTo(global_type);
+                    type = intLitExpr.getType();
+                    res.coerceType((StringToLowercase(type)));
+                }
+                else {
+                    intLitExpr.setCoerceTo(global_type);
+                    type = intLitExpr.getCoerceTo();
+                    res.coerceType((StringToLowercase(type)));
+                }
             }
 
 
@@ -189,6 +218,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitFloatLitExpr(FloatLitExpr floatLitExpr, Object arg) throws Exception {
+        System.out.println("visit float lit expr");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type;
         if (floatLitExpr.getCoerceTo() != null && floatLitExpr.getCoerceTo() != Types.Type.FLOAT){
@@ -215,14 +245,16 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitColorConstExpr(ColorConstExpr colorConstExpr, Object arg) throws Exception {
+        System.out.println("visit color const expr");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
-        res.add("ColorTuple.unpack(Color." + colorConstExpr.getText() + ".getRGB())");
+        res.add("(ColorTuple.unpack(Color." + colorConstExpr.getText() + ".getRGB()))");
         return res.str;
     }
 
     //    ( <boxed(coerceTo)> ConsoleIO.readValueFromConsole( “coerceType”,
     @Override
     public Object visitConsoleExpr(ConsoleExpr consoleExpr, Object arg) throws Exception {
+        System.out.println("visit console expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         res.readConsole();
         // continues to visitReadStatement method :)
@@ -231,21 +263,22 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitColorExpr(ColorExpr colorExpr, Object arg) throws Exception {
+        System.out.println("visit color expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
-        if(isInitialized) {
-            res.add("new ColorTuple(" + colorExpr.getRed().getText() + "," + colorExpr.getGreen().getText() + "," + colorExpr.getBlue().getText() + ")");
-        }
-        else {
-            res.add(String.format("for(int %s=%s; %s<a.getWidth(); %s++)", colorExpr.getRed().getText(), colorExpr.getGreen().getText(), colorExpr.getRed().getText(),colorExpr.getRed().getText()));
-            res.add(String.format("\n\t\tfor(int %s=%s; %s<a.getWidth(); %s++)", colorExpr.getBlue().getText(), colorExpr.getGreen().getText(), colorExpr.getBlue().getText(),colorExpr.getBlue().getText()));
-            res.add(String.format("\n\t\tImageOps.setColor(a,%s,%s,new ColorTuple((%s-%s),0,(y-x)))",
-                    colorExpr.getRed().getText(),colorExpr.getBlue().getText(),
-                    colorExpr.getRed().getText(),colorExpr.getBlue().getText(),
-                    colorExpr.getGreen().getText(),
-                    colorExpr.getRed().getText(),colorExpr.getBlue().getText(),
-                    colorExpr.getRed().getText(),colorExpr.getBlue().getText()));
 
-        }
+//            res.add("new ColorTuple(" + colorExpr.getRed().getText() + "," + colorExpr.getGreen().getText() + "," + colorExpr.getBlue().getText() + ")");
+
+        Expr red = colorExpr.getRed();
+        Expr green = colorExpr.getGreen();
+        Expr blue = colorExpr.getBlue();
+
+        res.add("new ColorTuple(");
+        red.visit(this, res.str);
+        res.add(",");
+        green.visit(this, res.str);
+        res.add(",");
+        blue.visit(this, res.str);
+        res.add(")");
 
         return res.str;
     }
@@ -254,39 +287,157 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpression, Object arg) throws Exception {
+        System.out.println("visit unary expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         //  op
-        res.add(" ");
 
-        res.add(unaryExpression.getOp().getText());
-        //  expr
-        unaryExpression.getExpr().visit(this, res.str);
+        if(unaryExpression.getOp().getKind() == IToken.Kind.COLOR_OP) {
+            //getRed/Green/Blue return components of respective colors
+            if(unaryExpression.getType() ==  COLOR) {
+                res.add("ColorTuple.");
+                res.add(unaryExpression.getOp().getText());
+                res.add("(");
+                unaryExpression.getExpr().visit(this, res.getString());
+                res.add(")");
+            }
+            //Images will have their color components extracted and potentially assigned to another image
+            else if(unaryExpression.getType() == IMAGE) {
+                res.add("ImageOps.");
+                res.add(switch(unaryExpression.getOp().getText()) {
+                    case "getRed" -> "extractRed(";
+                    case "getGreen" -> "extractGreen(";
+                    case "getBlue" -> "extractBlue(";
+                    default -> throw new IllegalArgumentException("Invalid unary operator");
+                });
+                unaryExpression.getExpr().visit(this, res.str);
+                res.add(")");
+            }
+        }
+        else {
+            res.add(" ");
+
+            res.add(unaryExpression.getOp().getText());
+            //  expr
+            unaryExpression.getExpr().visit(this, res.str);
+        }
         return res.str;
     }
 
     //    ( <left> <op> <right> )
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws Exception {
+        System.out.println("visit Binary Expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type = binaryExpr.getType();
         Types.Type leftType = binaryExpr.getLeft().getType();
         Types.Type rightType = binaryExpr.getRight().getType();
-        System.out.println("ENTERED BINARY IMAGE " + binaryExpr.getLeft() + " : " + binaryExpr.getRight());
+        System.out.println("ENTERED BINARY IMAGE " + binaryExpr.getLeft().getType().toString() + " : " + binaryExpr.getRight().getText());
 
 
-        if(leftType == COLOR && rightType == COLOR){
-            //throw new UnsupportedOperationException("N/A");
-            res.add("(ImageOps.binaryTupleOp(");
-            res.add("ImageOps.OP." + binaryExpr.getOp().getKind().name() + ",");
-            res.add(binaryExpr.getLeft().getText() + ",");
-            res.add(binaryExpr.getRight().getText() + "))");
+
+        Expr left = binaryExpr.getLeft();
+        Expr right = binaryExpr.getRight();
+
+        Types.Type binType = binaryExpr.getType();
+
+        //These might already be handled by their visitors
+         leftType = (left.getCoerceTo() != null) ? left.getCoerceTo() : left.getType();
+         rightType = (right.getCoerceTo() != null) ? right.getCoerceTo() : right.getType();
+
+        if(binaryExpr.getCoerceTo() != null && binType != binaryExpr.getCoerceTo()) {
+            String coercedType = toJavaType(binaryExpr.getCoerceTo());
+            System.out.println("YAYAYYAYAY "+coercedType);
+            res.add("(");
+            res.add(coercedType);
+            res.add(")");
         }
-        else if (leftType == IMAGE && rightType == IMAGE){
-            //throw new UnsupportedOperationException("N/A");
-            res.add("(ImageOps.binaryImageImageOp(");
-            res.add("ImageOps.OP." + binaryExpr.getOp().getKind().name() + ",");
-            res.add(binaryExpr.getLeft().getText() + ",");
-            res.add(binaryExpr.getRight().getText() + "))");
+
+        IToken.Kind opKind = binaryExpr.getOp().getKind();
+        if((leftType == COLOR || rightType == COLOR) && (leftType == rightType)) {
+            res.add("(");
+            res.add("ImageOps.binaryTupleOp(");
+            res.add(switch(opKind) {
+                case PLUS -> "ImageOps.OP.PLUS";
+                case MINUS -> "ImageOps.OP.MINUS";
+                case TIMES -> "ImageOps.OP.TIMES";
+                case DIV -> "ImageOps.OP.DIV";
+                case MOD -> "ImageOps.OP.MOD";
+                case EQUALS -> "ImageOps.BoolOP.EQUALS";
+                case NOT_EQUALS -> "ImageOps.BoolOP.NOT_EQUALS";
+                default -> throw new IllegalArgumentException("Invalid binary operand types for color");
+            });
+            res.add(",");
+            left.visit(this, res.str);
+            res.add(",");
+            right.visit(this, res.str);
+            res.add(")");
+            res.add(")");
+        }
+        else if((leftType == IMAGE || rightType == IMAGE) && (leftType == rightType)) {
+            res.add("(");
+            res.add("ImageOps.binaryImageImageOp(");
+            res.add(switch(opKind) {
+                case PLUS -> "ImageOps.OP.PLUS";
+                case MINUS -> "ImageOps.OP.MINUS";
+                case TIMES -> "ImageOps.OP.TIMES";
+                case DIV -> "ImageOps.OP.DIV";
+                case MOD -> "ImageOps.OP.MOD";
+                case EQUALS -> "ImageOps.BoolOP.EQUALS";
+                case NOT_EQUALS -> "ImageOps.BoolOP.NOT_EQUALS";
+                default -> throw new IllegalArgumentException("Invalid binary operand types for image");
+            });
+            res.add(",");
+            left.visit(this, res.str);
+            res.add(",");
+            right.visit(this, res.str);
+            res.add(")");
+
+        }
+        else if((leftType == IMAGE && rightType == COLOR) || (leftType == COLOR && rightType == IMAGE)) {
+
+
+            //Determine which side has the image and which has the color
+            Expr imageExpr = (leftType == IMAGE) ? left : right;
+            Expr colorExpr = (leftType == COLOR) ? left : right;
+
+            res.add("(");
+            res.add("ImageOps.binaryImageScalarOp(");
+            res.add(switch(opKind) {
+                case PLUS -> "ImageOps.OP.PLUS";
+                case MINUS -> "ImageOps.OP.MINUS";
+                case TIMES -> "ImageOps.OP.TIMES";
+                case DIV -> "ImageOps.OP.DIV";
+                case MOD -> "ImageOps.OP.MOD";
+                default -> throw new IllegalArgumentException("Invalid binary operand types for image");
+            });
+            res.add(",");
+            imageExpr.visit(this, res.str);
+            res.add(",");
+            colorExpr.visit(this, res.str);
+            res.add(")");
+        }
+        else if((leftType == IMAGE && rightType == INT) || (leftType == INT && rightType == IMAGE)) {
+
+
+            //Determine which side has the image and which has the color
+            Expr imageExpr = (leftType == IMAGE) ? left : right;
+            Expr intExpr = (leftType == INT) ? left : right;
+
+            res.add("(");
+            res.add("ImageOps.binaryImageScalarOp(");
+            res.add(switch(opKind) {
+                case PLUS -> "ImageOps.OP.PLUS";
+                case MINUS -> "ImageOps.OP.MINUS";
+                case TIMES -> "ImageOps.OP.TIMES";
+                case DIV -> "ImageOps.OP.DIV";
+                case MOD -> "ImageOps.OP.MOD";
+                default -> throw new IllegalArgumentException("Invalid binary operand types for image");
+            });
+            res.add(",");
+            imageExpr.visit(this, res.str);
+            res.add(",");
+            intExpr.visit(this, res.str);
+            res.add(")");
         }
         else {
             res.add("(");
@@ -312,7 +463,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws Exception {
-
+        System.out.println("visit Ident Expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type = identExpr.getCoerceTo() != null ? identExpr.getCoerceTo() : identExpr.getType();
         //add cast type if applicable
@@ -334,6 +485,7 @@ public class CodeGenVisitor implements ASTVisitor {
     //    ( <condition> ) ? <trueCase> : <falseCase>
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws Exception {
+        System.out.println("visit Conditional Expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         res.add("(");
         conditionalExpr.getCondition().visit(this, res.getString());
@@ -349,20 +501,55 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws Exception {
-        System.out.println("workings");
+//        System.out.println("workings");
+//
+//        StringBuilderDelegate res = new StringBuilderDelegate(arg);
+//        System.out.println("visit diment");
+//        dimension.getWidth().visit(this, res.getString());
+//        res.add(",");
+//        dimension.getHeight().visit(this, res.getString());
 
-        StringBuilderDelegate res = new StringBuilderDelegate(arg);
-        System.out.println("workings");
-        dimension.getWidth().visit(this, res.getString());
-        res.add(",");
-        dimension.getHeight().visit(this, res.getString());
 
-        return res.getString();
+
+        return "";
     }
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws Exception {
-        throw new UnsupportedOperationException("n/a");
+        System.out.println("visit pixel selector");
+        Object argObj = ((Object[]) arg)[0];
+        StringBuilderDelegate res = new StringBuilderDelegate(argObj);
+        String targetName = (String)((Object[]) arg)[1];
+
+        Expr x = pixelSelector.getX();
+        Expr y = pixelSelector.getY();
+
+        res.add("for(int ");
+        res.add(x.getText());
+        res.add(" = 0; ");
+        res.add(x.getText());
+        res.add(" < ");
+        res.add(targetName);
+        res.add(".getWidth(); ");
+        res.add(x.getText());
+        res.add("++)");
+        res.add("\n");
+        res.add("\t\t");
+        res.add("for(int ");
+        res.add(y.getText());
+        res.add(" = 0; ");
+        res.add(y.getText());
+        res.add(" < ");
+        res.add(targetName);
+        res.add(".getHeight(); ");
+        res.add(y.getText());
+        res.add("++)");
+        res.add("\n");
+        res.add("\t");
+        res.add("\t");
+        res.add("\t");
+
+        return  res.str;
     }
 
     //    <name> = <expr> ;
@@ -370,26 +557,62 @@ public class CodeGenVisitor implements ASTVisitor {
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         // add name =
+        System.out.println("visit assignment statement");
 
-        if ( assignmentStatement.getTargetDec().getType()== IMAGE) {
-            assignmentStatement.getExpr().visit(this, res.getString());
-            return res.str;
+        if(assignmentStatement.getTargetDec().getType() == IMAGE && assignmentStatement.getExpr().getType() == IMAGE) {
+            res.add(assignmentStatement.getName());
+            res.add(" = ");
+            //If the image previously had a dimension, it will always keep that size
+            if(assignmentStatement.getTargetDec().getDim() != null) {
+                res.add("ImageOps.resize(");
+                res.add(assignmentStatement.getExpr().getText());
+                res.add(",");
+                res.add(assignmentStatement.getTargetDec().getDim().getWidth().getText());
+                res.add(",");
+                res.add(assignmentStatement.getTargetDec().getDim().getHeight().getText());
+                res.add(")");
+            }
         }
-        res.setAssignment(assignmentStatement.getName());
-        res.add("(" + StringToLowercase(assignmentStatement.getTargetDec().getType())  +") (");
-//        res.add("(");
-//        if(assignmentStatement.getTargetDec().getType() == COLOR){
-//            res.add("ColorTuple");
-//        }
-//        else{
-//            res.add(StringToLowercase(assignmentStatement.getTargetDec().getType()));
-//        }
-//        res.add(") (");
+        else if(assignmentStatement.getExpr().getCoerceTo() != COLOR) {
 
-        // add  expr
-        assignmentStatement.getExpr().visit(this, res.getString());
+            Object[] args = {res.str, assignmentStatement.getName()};
+            assignmentStatement.getSelector().visit(this, args);
 
-        res.add(")");
+            res.add("ImageOps.setColor(");
+            res.add(assignmentStatement.getName());
+            res.add(",");
+            res.add(assignmentStatement.getSelector().getX().getText());
+            res.add(",");
+            res.add(assignmentStatement.getSelector().getY().getText());
+            res.add(",");
+
+            //If the expression is an int coerced to a color, make a colortuple with it
+            if(assignmentStatement.getExpr().getCoerceTo() == INT) {
+                res.add("new ColorTuple(");
+                assignmentStatement.getExpr().visit(this, res.str);
+                res.add(")");
+            }
+            else {
+                assignmentStatement.getExpr().visit(this, res.getString());
+            }
+
+            res.add(")");
+        }
+        else if(assignmentStatement.getExpr().getCoerceTo() == INT) {
+            res.add(assignmentStatement.getName());
+            res.add(" = ");
+            res.add("new ColorTuple(");
+            assignmentStatement.getExpr().visit(this, res.str);
+            res.add(")");
+        }
+        else {
+            res.setAssignment(assignmentStatement.getName());
+            res.add("(" + StringToLowercase(assignmentStatement.getTargetDec().getType()) + ") (");
+
+            assignmentStatement.getExpr().visit(this, res.getString());
+
+            res.add(")");
+        }
         return res.getString();
     }
 
@@ -402,6 +625,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws Exception {
+        System.out.println("visit write statement");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         res.print(writeStatement.getSource().getText());
         return res.getString();
@@ -409,13 +633,31 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitReadStatement(ReadStatement readStatement, Object arg) throws Exception {
+        System.out.println("visit read statement");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         //if reading from console then append (object version of type)
         res.readName(readStatement.getName(), boxed(readStatement.getTargetDec().getType()));
-        readStatement.getSource().visit(this, res.getString());
-        //if reading from console
-        Types.Type targetType = readStatement.getTargetDec().getType();
-        res.readConsoleExpr((targetType));
+
+        if(readStatement.getTargetDec().getType() == IMAGE) {
+            res.add(" = ");
+            res.add("FileURLIO.readImage(");
+            readStatement.getSource().visit(this, res.str);
+
+            if (readStatement.getTargetDec() != null) {
+                res.add(",");
+                res.add(readStatement.getTargetDec().getDim().getWidth().getText());
+                res.add(",");
+                res.add(readStatement.getTargetDec().getDim().getHeight().getText());
+            }
+            res.add(")");
+            return res.str;
+
+        } else {
+            readStatement.getSource().visit(this, res.getString());
+            //if reading from console
+            Types.Type targetType = readStatement.getTargetDec().getType();
+            res.readConsoleExpr((targetType));
+        }
         return res.getString();
     }
 
@@ -437,6 +679,10 @@ public class CodeGenVisitor implements ASTVisitor {
         str.append("import java.awt.image.BufferedImage; \n");
         str.append("import edu.ufl.cise.plc.runtime.ColorTuple; \n");
         str.append("import edu.ufl.cise.plc.runtime.ImageOps; \n");
+        str.append("import edu.ufl.cise.plc.runtime.*; \n");
+        str.append("import java.awt.Color; \n");
+
+
 
         str.append("public class ").append(program.getName()).append("{\n");
 
@@ -446,9 +692,6 @@ public class CodeGenVisitor implements ASTVisitor {
         str.append("public static ");
         if (typeLowerCase.equals("image")) {
             str.append("BufferedImage");
-        }
-        else if (typeLowerCase.equals("color")){
-            str.append("ColorTuple");
         }
         else {
             str.append(typeLowerCase);
@@ -489,6 +732,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDefWithDim(NameDefWithDim nameDefWithDim, Object arg) throws Exception {
+        System.out.println("visit name def with dim");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         String typeLowerCase = StringToLowercase(nameDefWithDim.getType());
         global_type = nameDefWithDim.getType();
@@ -502,7 +746,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws Exception {
-
+        System.out.println("visit return statement");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Expr expr = returnStatement.getExpr();
         res.returnStatement();
@@ -512,58 +756,130 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitVarDeclaration(VarDeclaration declaration, Object arg) throws Exception {
-
+        System.out.println("visit var declration");
+        
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
-        declaration.getNameDef().visit(this, res.getString());
 
 
-        if (declaration.getExpr() != null) {
-            isInitialized = true;
-            if (global_type == IMAGE) {
-                res.add(" = ");
-                res.add("FileURLIO.readImage(");
+        declaration.getNameDef().visit(this, res.str);
+        if(declaration.getExpr() != null) {
+            res.add(" = ");
 
-                declaration.getExpr().visit(this, res.getString());
-                res.add(",");
-                declaration.getDim().visit(this, arg);
-                res.add(")");
+            //Image with/without dimension case
+            if(declaration.getType() == IMAGE) {
+
+                if(declaration.getDim() != null) {
+                    //Resize the RHS to the LHS
+                    if(declaration.getExpr().getType() == IMAGE) {
+                        res.add("ImageOps.resize(");
+                        declaration.getExpr().visit(this, res.str);
+                        res.add(",");
+                        res.add(declaration.getDim().getWidth().getText());
+                        res.add(",");
+                        res.add(declaration.getDim().getHeight().getText());
+                        res.add(")");
+                    }
+                    //Assign this color to the image of size Dimension
+                    //TODO: This doesn't work
+                    else if(declaration.getExpr().getType() == COLOR || declaration.getExpr().getType() == INT) {
+                        res.add("new BufferedImage(");
+                        res.add(declaration.getDim().getWidth().getText());
+                        res.add(",");
+                        res.add(declaration.getDim().getHeight().getText());
+                        res.add(",");
+                        declaration.visit(this, res.str);
+                        res.add(")");
+                    }
+                    else {
+                        res.add("FileURLIO.readImage(");
+                        declaration.getExpr().visit(this, res.str);
+                        res.add(",");
+                        res.add(declaration.getDim().getWidth().getText());
+                        res.add(",");
+                        res.add(declaration.getDim().getHeight().getText());
+                        res.add(")");
+                    }
+                }
+                else {
+                    if(declaration.getExpr().getType() == IMAGE) {
+                        declaration.getExpr().visit(this, res.str);
+                    }
+                    else {
+                        res.add("FileURLIO.readImage(");
+                        declaration.getExpr().visit(this, res.str);
+                        res.add(")");
+                    }
+                }
             }
-            else if (global_type == COLOR) {
-                res.add(" = ");
-                res.add("(ColorTuple)(");
-                declaration.getExpr().visit(this, res.getString());
-                res.add(")");
+            //The type of the declaration is a color of some kind with initializer (single int)
+            //TODO: Does anything have to be done with ColorFloats?
+            else if(declaration.getExpr() != null && declaration.getType() == COLOR) {
+                //Only int and float initializations call a ColorTuple ctor
+                if(declaration.getExpr().getType() == INT) {
+                    res.add("new ColorTuple(");
+                    declaration.getExpr().visit(this, res.str);
+                    res.add(')');
+                }
+                else {
+                    declaration.getExpr().visit(this, res.str);
+                }
             }
+            //General case of a varDeclaration
             else {
                 global_type = declaration.getType();
-                res.add("=");
                 res.add("(" + StringToLowercase(global_type) + ")");
                 res.add("(");
 
                 declaration.getExpr().visit(this, res.getString());
                 res.add(")");
-            }
+                      }
+        }
+        //Image without expression cases
+        else if(declaration.getExpr() == null && declaration.getType() == IMAGE) {
 
+            if(declaration.getDim() != null) {
+                res.add(" = new BufferedImage(");
+                res.add(declaration.getDim().getWidth().getText());
+                res.add(",");
+                res.add(declaration.getDim().getHeight().getText());
+                res.add(",");
+                res.add("BufferedImage.TYPE_INT_RGB");
+                res.add(")");
+            }
         }
 
-        else {
-            isInitialized = false;
 
-            global_type = declaration.getType();
-            if (global_type == IMAGE) {
-                res.add(" = ");
-                res.add("new BufferedImage(widthAndHeight,widthAndHeight,BufferedImage.TYPE_INT_RGB)");
-            }
-        }
 
         return res.getString();
     }
 
+    public String toJavaType(Types.Type type) throws Exception{
+        return switch(type) {
+            case BOOLEAN -> "boolean";
+            case COLOR -> "ColorTuple";
+            case FLOAT -> "float";
+            case IMAGE -> "BufferedImage";
+            case INT -> "int";
+            case STRING -> "String";
+            case VOID -> "void";
+            default -> throw new IllegalArgumentException("Invalid conversion");
+        };
+    }
 
     @Override
     public Object visitUnaryExprPostfix(UnaryExprPostfix unaryExprPostfix, Object arg) throws Exception {
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
-        res.add("BufferedImage.getRGB("+unaryExprPostfix.getSelector().getX().getText()+","+unaryExprPostfix.getSelector().getY().getText()+")");
+//        res.add("BufferedImage.getRGB("+unaryExprPostfix.getSelector().getX().getText()+","+unaryExprPostfix.getSelector().getY().getText()+")");
+        Expr x = unaryExprPostfix.getSelector().getX();
+        Expr y = unaryExprPostfix.getSelector().getY();
+
+        res.add("ColorTuple.unpack(");
+        res.add(unaryExprPostfix.getFirstToken().getText());
+        res.add(".getRGB(");
+        x.visit(this, res.str);
+        res.add(",");
+        y.visit(this, res.str);
+        res.add("))");
         return res.str;
     }
 }
