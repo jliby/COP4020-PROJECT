@@ -199,6 +199,9 @@ public class Parser implements IParser{
         else{
             e = logicalOrExpr();
         }
+        if(match(ERROR) != null){
+            throw new LexicalException("");
+        }
         return e;
     }
 

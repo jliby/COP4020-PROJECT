@@ -266,6 +266,13 @@ public class CodeGenVisitor implements ASTVisitor {
             res.add("\"Enter Image URL: \"");
             res.add(")");
         }
+        if (global_type == COLOR) {
+            res.add("(ColorTuple) ConsoleIO.readValueFromConsole(");
+            res.add("\"COLOR\"");
+            res.add(",");
+            res.add("\"Enter COLOR: \"");
+            res.add(")");
+        }
         else if (global_type == INT) {
             res.add("(int) ConsoleIO.readValueFromConsole(");
             res.add("\"INT\"");
@@ -307,7 +314,6 @@ public class CodeGenVisitor implements ASTVisitor {
         Expr red = colorExpr.getRed();
         Expr green = colorExpr.getGreen();
         Expr blue = colorExpr.getBlue();
-        System.out.println("TEST TEST TEST");
 
         res.add("new ColorTuple(");
         red.visit(this, res.str);
@@ -518,7 +524,6 @@ public class CodeGenVisitor implements ASTVisitor {
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws Exception {
         System.out.println("visit identity expression");
-        System.out.println(identExpr.getText());
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type = identExpr.getCoerceTo() != null ? identExpr.getCoerceTo() : identExpr.getType();
         //add cast type if applicable
@@ -532,7 +537,8 @@ public class CodeGenVisitor implements ASTVisitor {
             if (identExpr.getType() == COLOR && identExpr.getCoerceTo() == type) {
                 res.add(identExpr.getText());
                 res.add(".pack()");
-            } else {
+            }
+            else {
                 res.add(identExpr.getText());
             }
             return res.str;
@@ -625,7 +631,6 @@ public class CodeGenVisitor implements ASTVisitor {
             }
         }
         else if(assignmentStatement.getExpr().getType() == COLOR) {
-
             Object[] args = {res.str, assignmentStatement.getName()};
             if(assignmentStatement.getSelector() != null) {
                 assignmentStatement.getSelector().visit(this, args);
@@ -641,14 +646,14 @@ public class CodeGenVisitor implements ASTVisitor {
                 //If the expression is an int coerced to a color, make a colortuple with it
                 if (assignmentStatement.getExpr().getCoerceTo() == INT) {
                     res.add("new ColorTuple(");
-
                     assignmentStatement.getExpr().visit(this, res.str);
                     res.add(")");
                 } else {
                     assignmentStatement.getExpr().visit(this, res.getString());
                 }
                 res.add(")");
-            } else {
+            }
+            else {
                 if(assignmentStatement.getTargetDec().getDim() != null) {
                     res.add("for(int x = 0; x < " + assignmentStatement.getName() + ".getWidth(); ");
                     res.add("x++)\n\t\t");
@@ -657,6 +662,11 @@ public class CodeGenVisitor implements ASTVisitor {
                     res.add("ImageOps.setColor(" + assignmentStatement.getName() + ",x,y,");
                     assignmentStatement.getExpr().visit(this, res.str);
                     res.add(")");
+                }
+                else{
+                    res.add(assignmentStatement.getName());
+                    res.add(" = ");
+                    assignmentStatement.getExpr().visit(this, res.str);
                 }
             }
         }
@@ -710,11 +720,12 @@ public class CodeGenVisitor implements ASTVisitor {
             res.add(",");
             dest.visit(this, res.str);
             res.add(")");
-        } else {
-            System.out.println(src.getType());
+        }
+        else {
             if (src.getType() == COLOR) {
+                res.add("ConsoleIO.console.println(");
                 src.visit(this, arg);
-
+                res.add(")");
 
 //                ColorTuple [red=1, green=2, blue=3]
 //                ColorTuple [red=255, green=0, blue=0]
@@ -777,6 +788,17 @@ public class CodeGenVisitor implements ASTVisitor {
             }
             return res.str;
         }
+        else if (readStatement.getTargetDec().getType() == STRING) {
+            if(readStatement.getSource().getType() != CONSOLE) {
+                res.add("FileURLIO.readValueFromFile(");
+                readStatement.getSource().visit(this, res.str);
+                res.add(")");
+            }
+            else {
+                readStatement.getSource().visit(this, res.str);
+            }
+            return res.str;
+        }
         else if(readStatement.getTargetDec().getType() == BOOLEAN) {
             if(readStatement.getSource().getType() != CONSOLE) {
                 res.add("FileURLIO.readValueFromFile(");
@@ -796,6 +818,9 @@ public class CodeGenVisitor implements ASTVisitor {
             }
             else {
                 readStatement.getSource().visit(this, res.str);
+//                res.add("FileURLIO.readValueFromFile(");
+//                readStatement.getSource().visit(this, res.str);
+//                res.add(")");
             }
             return res.str;
         }
@@ -855,7 +880,6 @@ public class CodeGenVisitor implements ASTVisitor {
     @Override
     public Object visitNameDef(NameDef nameDefintion, Object arg) throws Exception {
         System.out.println("visit name definition");
-        System.out.println(nameDefintion.getName());
         StringBuilder sb = (StringBuilder) arg;
         if(nameDefintion.getType() == COLOR){
             global_type = nameDefintion.getType();
@@ -888,7 +912,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws Exception {
-        //System.out.println("visit return statement");
+        System.out.println("visit return statement");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Expr expr = returnStatement.getExpr();
         res.returnStatement();
@@ -979,9 +1003,49 @@ public class CodeGenVisitor implements ASTVisitor {
                     res.add("new ColorTuple(");
                     declaration.getExpr().visit(this, res.str);
                     res.add(')');
-                } else {
+                }
+//                else if (declaration.getExpr().getType() == FLOAT){
+//                    res.add("(float) FileURLIO.readValueFromFile(");
+//                    declaration.getExpr().visit(this, res.str);
+//                    res.add(")");
+//                }
+                else if (declaration.getExpr().getType() == STRING){
+                    res.add("(ColorTuple) FileURLIO.readValueFromFile(");
+                    declaration.getExpr().visit(this, res.str);
+                    res.add(")");
+                }
+                else {
                     declaration.getExpr().visit(this, res.str);
                 }
+            }
+            else if (declaration.getType() == FLOAT && declaration.getExpr().getType() == STRING){
+                res.add("(float) FileURLIO.readValueFromFile(");
+                declaration.getExpr().visit(this, res.str);
+                res.add(")");
+            }
+            else if (declaration.getType() == INT && declaration.getExpr().getType() == STRING){
+                res.add("(int) FileURLIO.readValueFromFile(");
+                declaration.getExpr().visit(this, res.str);
+                res.add(")");
+            }
+            else if (declaration.getType() == BOOLEAN && declaration.getExpr().getType() == STRING){
+                res.add("(boolean) FileURLIO.readValueFromFile(");
+                declaration.getExpr().visit(this, res.str);
+                res.add(")");
+            }
+            //Check if it is a file: If the right side is a string and it is read statement
+            else if (declaration.getType() == STRING && declaration.getExpr().getType() == STRING){
+                if(declaration.getOp().getKind() == IToken.Kind.ASSIGN){
+                    declaration.getExpr().visit(this, res.str);
+                }
+                else{
+                    res.add("(String) FileURLIO.readValueFromFile(");
+                    declaration.getExpr().visit(this, res.str);
+                    res.add(")");
+                }
+                //res.add("(String) FileURLIO.readValueFromFile(");
+                //declaration.getExpr().visit(this, res.str);
+                //res.add(")");
             }
             //General case of a varDeclaration
             else {
