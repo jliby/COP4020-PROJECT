@@ -551,7 +551,7 @@ public class Assignment6Tests {
 		checkProgram(input, new ColorTuple(40, 50, 60));
 	}
 
-	//	/* declares and initializes variable in declaration. returns variable */
+//	/* declares and initializes variable in declaration. returns variable */
 	@Test
 	void test6() throws Exception {
 		String input = "int f() int x = 55; ^ x;";
@@ -576,28 +576,28 @@ public class Assignment6Tests {
 		checkProgram(input, new ColorTuple(100, 200, 255));
 	}
 
-	//	/* Declared variable, initializes in assignment statement, returns */
+//	/* Declared variable, initializes in assignment statement, returns */
 	@Test
 	void test10() throws Exception {
 		String input = "int f() int x; x = 33; ^ x;";
 		checkProgram(input, 33);
 	}
 
-	//	/* Declared variable, initializes in assignment statement, returns */
+//	/* Declared variable, initializes in assignment statement, returns */
 	@Test
 	void test11() throws Exception {
 		String input = "float f() float x; x = 56.67; ^ x;";
 		checkProgram(input, 56.67f);
 	}
 
-	//	/* Declared variable, initializes in assignment statement, returns */
+//	/* Declared variable, initializes in assignment statement, returns */
 	@Test
 	void test12() throws Exception {
 		String input = "string f() string x; x = \"abc\"; ^ x;";
 		checkProgram(input, "abc");
 	}
 
-	//	/* Declared variable, initializes in assignment statement, returns */
+//	/* Declared variable, initializes in assignment statement, returns */
 	@Test
 	void test13() throws Exception {
 		String input = "color f() color x; x = <<34,56,78>>; ^ x;";
@@ -610,7 +610,7 @@ public class Assignment6Tests {
 		checkProgram(input, false);
 	}
 
-	//	/* binary expressions */
+//	/* binary expressions */
 	@Test
 	void test15() throws Exception {
 		String input = """
@@ -1846,7 +1846,7 @@ public class Assignment6Tests {
 				         """;
 		checkProgram(input, new ColorTuple(255, 125, 0));
 	}
-
+	
 	@Test
 	void testPackUnpack1() throws Exception {
 		String input = """
@@ -1858,7 +1858,7 @@ public class Assignment6Tests {
 				         """;
 		checkProgram(input, new ColorTuple((new ColorTuple(500,125,-3).pack())));
 	}
-
+	
 
 	@Test
 	void testWriteIntToFile() throws Exception {

@@ -761,7 +761,7 @@ public class CodeGenVisitor implements ASTVisitor {
                 readStatement.getSource().visit(this, res.str);
                 res.add(")");
             }
-             else {
+            else {
                 readStatement.getSource().visit(this, res.str);
             }
             return res.str;
