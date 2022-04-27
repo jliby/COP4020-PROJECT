@@ -339,7 +339,9 @@ public class Parser implements IParser{
         else if (isKind(LPAREN)){
             consume();
             e = expr();
-            match(RPAREN);
+            if(match(RPAREN) == null){
+                throw new SyntaxException("");
+            }
         }
         else if (isKind(COLOR_CONST)){
             e = new ColorConstExpr(firstToken);
