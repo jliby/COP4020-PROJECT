@@ -1,5 +1,0 @@
-two =
-
-ColorTuple [red=2, green=2, blue=2]
-div =
-ColorTuple [red=25, green=30, blue=35]
