@@ -9,6 +9,8 @@ import static edu.ufl.cise.plc.ast.Types.Type.*;
 public class CodeGenVisitor implements ASTVisitor {
     Types.Type global_type = VOID;
     boolean fileUrlIOEnd = false;
+    boolean unpack = false;
+    boolean skipVisitAssignmnet = false;
 
     private String pkg;
 
@@ -36,6 +38,7 @@ public class CodeGenVisitor implements ASTVisitor {
         }
 
         void coerceType(Object type) {
+
             str.append("(");
             if(type.equals("color")) {
                 str.append("int");
@@ -68,7 +71,9 @@ public class CodeGenVisitor implements ASTVisitor {
 
         void print(Object obj) {
             str.append("ConsoleIO.console.println(");
-            if (!obj.equals("<<") || !obj.equals("RED")){
+            if (obj.equals("<<") || obj.equals("RED")) {
+                System.out.println(obj.toString());
+            }else{
                 str.append(obj);
             }
             str.append(")");
@@ -92,6 +97,7 @@ public class CodeGenVisitor implements ASTVisitor {
                     str.append("BufferedImage");
                 }
                 else {
+
                     str.append(global_type);
                 }
                 str.append(") ");
@@ -156,7 +162,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitBooleanLitExpr(BooleanLitExpr booleanLitExpr, Object arg) throws Exception {
-        //System.out.println("visit Boolean Literal Expression");
+        System.out.println("visit Boolean Literal Expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         // add true or false literal expressions
         res.add(booleanLitExpr.getValue());
@@ -166,7 +172,7 @@ public class CodeGenVisitor implements ASTVisitor {
     // “””<stringLitExpr.getValue>”””
     @Override
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws Exception {
-        //System.out.println("visit string literal expression");
+        System.out.println("visit string literal expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         boolean start = true;
         res.add("\"\"\"\n");
@@ -179,14 +185,13 @@ public class CodeGenVisitor implements ASTVisitor {
     //If coerceTo != null and coerceTo != INT, add cast to coerced type.
     @Override
     public Object visitIntLitExpr(IntLitExpr intLitExpr, Object arg) throws Exception {
-        //System.out.println("visit int literal expression");
+        System.out.println("visit int literal expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type;
         if (intLitExpr.getCoerceTo() != null && intLitExpr.getCoerceTo() != Types.Type.INT){
             type = intLitExpr.getType();
             res.coerceType((StringToLowercase(type)));
-        }
-        else {
+        } else {
             if (global_type != VOID) {
                 if (global_type == COLOR) {
                     intLitExpr.setCoerceTo(global_type);
@@ -215,7 +220,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitFloatLitExpr(FloatLitExpr floatLitExpr, Object arg) throws Exception {
-        //System.out.println("visit float literal expression");
+        System.out.println("visit float literal expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type;
         if (floatLitExpr.getCoerceTo() != null && floatLitExpr.getCoerceTo() != Types.Type.FLOAT){
@@ -245,8 +250,9 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitColorConstExpr(ColorConstExpr colorConstExpr, Object arg) throws Exception {
-        //System.out.println("visit color const expression");
+        System.out.println("visit color const expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
+        unpack = true;
         res.add("(ColorTuple.unpack(Color." + colorConstExpr.getText() + ".getRGB()))");
         return res.str;
     }
@@ -254,8 +260,9 @@ public class CodeGenVisitor implements ASTVisitor {
     //    ( <boxed(coerceTo)> ConsoleIO.readValueFromConsole( “coerceType”,
     @Override
     public Object visitConsoleExpr(ConsoleExpr consoleExpr, Object arg) throws Exception {
-        //System.out.println("visit console expression");
+        System.out.println("visit console expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
+        System.out.println(consoleExpr.getText());
         if (global_type == IMAGE) {
             res.add("(String) ConsoleIO.readValueFromConsole(");
             res.add("\"STRING\"");
@@ -306,7 +313,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitColorExpr(ColorExpr colorExpr, Object arg) throws Exception {
-        //System.out.println("visit color expression");
+        System.out.println("visit color expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Expr red = colorExpr.getRed();
         Expr green = colorExpr.getGreen();
@@ -317,6 +324,7 @@ public class CodeGenVisitor implements ASTVisitor {
         res.add(",");
         green.visit(this, res.str);
         res.add(",");
+
         blue.visit(this, res.str);
         res.add(")");
 
@@ -327,8 +335,9 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpression, Object arg) throws Exception {
-        //System.out.println("visit unary expression");
+        System.out.println("visit unary expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
+        System.out.println(unaryExpression.getType());
         if(unaryExpression.getOp().getKind() == IToken.Kind.COLOR_OP) {
             //getRed/Green/Blue return components of respective colors
             if(unaryExpression.getType() ==  COLOR) {
@@ -371,6 +380,10 @@ public class CodeGenVisitor implements ASTVisitor {
         else {
             res.add(" ");
             res.add(unaryExpression.getOp().getText());
+//            System.out.println(unaryExpression.getOp().getText());
+//            System.out.println(unaryExpression.getOp().getKind());
+//
+//            System.out.println(unaryExpression.getExpr().getText());
             unaryExpression.getExpr().visit(this, res.str);
         }
         return res.str;
@@ -379,7 +392,7 @@ public class CodeGenVisitor implements ASTVisitor {
     //    ( <left> <op> <right> )
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws Exception {
-        //System.out.println("visit Binary Expression");
+        System.out.println("visit Binary Expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type = binaryExpr.getType();
         Types.Type leftType = binaryExpr.getLeft().getType();
@@ -396,9 +409,11 @@ public class CodeGenVisitor implements ASTVisitor {
 
         if(binaryExpr.getCoerceTo() != null && binType != binaryExpr.getCoerceTo()) {
             String coercedType = toJavaType(binaryExpr.getCoerceTo());
-            res.add("(");
-            res.add(coercedType);
-            res.add(")");
+            if(!skipVisitAssignmnet) {
+                res.add("(");
+                res.add(coercedType);
+                res.add(")");
+            }
         }
 
         IToken.Kind opKind = binaryExpr.getOp().getKind();
@@ -418,11 +433,19 @@ public class CodeGenVisitor implements ASTVisitor {
             res.add(",");
             left.visit(this, res.str);
             res.add(",");
-            right.visit(this, res.str);
+            System.out.println("GOOD" + binaryExpr.getType());
+            if (binaryExpr.getRight().getType() == INT && binaryExpr.getType() == COLOR && unpack == false) {
+                res.add("new ColorTuple(");
+                right.visit(this, res.str);
+                res.add(")");
+            } else {
+                right.visit(this, res.str);
+                unpack = true;
+
+            }
             res.add(")");
             res.add(")");
-        }
-        else if((leftType == IMAGE || rightType == IMAGE) && (leftType == rightType)) {
+        } else if((leftType == IMAGE || rightType == IMAGE) && (leftType == rightType)) {
             res.add("(");
             if(opKind == IToken.Kind.EQUALS || opKind == IToken.Kind.NOT_EQUALS) {
                 if (opKind == IToken.Kind.NOT_EQUALS) {
@@ -432,6 +455,7 @@ public class CodeGenVisitor implements ASTVisitor {
                 }
                 left.visit(this, res.str);
                 res.add(",");
+
                 right.visit(this, res.str);
                 res.add(")");
             } else {
@@ -471,6 +495,7 @@ public class CodeGenVisitor implements ASTVisitor {
             res.add(",");
             imageExpr.visit(this, res.str);
             res.add(",");
+
             colorExpr.visit(this, res.str);
             res.add(")");
         } else if((leftType == IMAGE && rightType == INT) || (leftType == INT && rightType == IMAGE)) {
@@ -516,12 +541,15 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws Exception {
-        //System.out.println("visit identity expression");
+        System.out.println("visit identity expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Types.Type type = identExpr.getCoerceTo() != null ? identExpr.getCoerceTo() : identExpr.getType();
         //add cast type if applicable
         if (identExpr.getCoerceTo() != null && identExpr.getCoerceTo() != type) {
+            System.out.println("yes");
             res.coerceType(StringToLowercase(identExpr.getCoerceTo()));
+
+
             return res.str;
         } else {
             if (identExpr.getType() == COLOR && identExpr.getCoerceTo() == type) {
@@ -538,7 +566,7 @@ public class CodeGenVisitor implements ASTVisitor {
     //    ( <condition> ) ? <trueCase> : <falseCase>
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws Exception {
-        //System.out.println("visit conditional expression");
+        System.out.println("visit conditional expression");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         res.add("(");
         conditionalExpr.getCondition().visit(this, res.getString());
@@ -559,7 +587,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws Exception {
-        //System.out.println("visit pixel selector");
+        System.out.println("visit pixel selector");
         Object argObj = ((Object[]) arg)[0];
         StringBuilderDelegate res = new StringBuilderDelegate(argObj);
         String targetName = (String)((Object[]) arg)[1];
@@ -580,7 +608,8 @@ public class CodeGenVisitor implements ASTVisitor {
     //    <name> = <expr> ;
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws Exception {
-        //System.out.println("visit assignment statement");
+        System.out.println("visit assignment statement");
+        //System.out.println("VISITED ASSIGN WITH " + assignmentStatement.getName() + " AND " + assignmentStatement.getExpr().getText());
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         if(assignmentStatement.getTargetDec().getType() == IMAGE && assignmentStatement.getExpr().getType() == IMAGE) {
             res.add(assignmentStatement.getName());
@@ -588,9 +617,11 @@ public class CodeGenVisitor implements ASTVisitor {
             //If the image previously had a dimension, it will always keep that size
             if(assignmentStatement.getTargetDec().getDim() != null) {
                 res.add("ImageOps.resize(");
+
                 assignmentStatement.getExpr().visit(this, res.str);
                 if(assignmentStatement.getExpr().getType() == IMAGE) {
                     res.add(",");
+                    System.out.println(assignmentStatement.getExpr().getType());
                     res.add(assignmentStatement.getName() + ".getWidth()");
                     res.add(",");
                     res.add(assignmentStatement.getName() + ".getHeight()");
@@ -608,6 +639,7 @@ public class CodeGenVisitor implements ASTVisitor {
                 res.add("ImageOps.clone(");
                 assignmentStatement.getExpr().visit(this, res.str);
                 res.add(")");
+
             }
         }
         else if(assignmentStatement.getExpr().getType() == COLOR) {
@@ -657,6 +689,20 @@ public class CodeGenVisitor implements ASTVisitor {
             assignmentStatement.getExpr().visit(this, res.str);
             res.add(")");
         }
+        else if (assignmentStatement.getExpr().getCoerceTo() == COLOR) {
+            System.out.println("new" + assignmentStatement.getExpr().getCoerceTo());
+            res.add("for(int x = 0; x < " + assignmentStatement.getName() + ".getWidth(); ");
+            res.add("x++)\n\t\t");
+            res.add("for(int y = 0; y < " + assignmentStatement.getName() + ".getHeight(); ");
+            res.add("y++)\n\t\t\t");
+            res.add("ImageOps.setColor(" + assignmentStatement.getName() + ",x,y,");
+            res.add("new ColorTuple(");
+            // this is it
+            skipVisitAssignmnet = true;
+            assignmentStatement.getExpr().visit(this, res.str);
+            skipVisitAssignmnet = false;
+            res.add(")");
+            res.add(")");        }
         else {
             res.setAssignment(assignmentStatement.getName());
             res.add("(" + StringToLowercase(assignmentStatement.getTargetDec().getType()) + ") (");
@@ -675,7 +721,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws Exception {
-        //System.out.println("visit write statement");
+        System.out.println("visit write statement");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
 
         Expr src = writeStatement.getSource();
@@ -706,6 +752,7 @@ public class CodeGenVisitor implements ASTVisitor {
                 res.add("ConsoleIO.console.println(");
                 src.visit(this, arg);
                 res.add(")");
+
 //                ColorTuple [red=1, green=2, blue=3]
 //                ColorTuple [red=255, green=0, blue=0]
             }
@@ -725,7 +772,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitReadStatement(ReadStatement readStatement, Object arg) throws Exception {
-        //System.out.println("visit read statement");
+        System.out.println("visit read statement");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         //if reading from console then append (object version of type)
         res.readName(readStatement.getName(), boxed(readStatement.getTargetDec().getType()));
@@ -740,8 +787,10 @@ public class CodeGenVisitor implements ASTVisitor {
                 res.add(",");
                 res.add(readStatement.getTargetDec().getDim().getHeight().getText());
             }
+
             res.add(")");
             return res.str;
+
         }
         else if (readStatement.getTargetDec().getType() == INT) {
             if(readStatement.getSource().getType() != CONSOLE) {
@@ -795,11 +844,23 @@ public class CodeGenVisitor implements ASTVisitor {
             }
             else {
                 readStatement.getSource().visit(this, res.str);
+//                res.add("FileURLIO.readValueFromFile(");
+//                readStatement.getSource().visit(this, res.str);
+//                res.add(")");
             }
             return res.str;
         }
+//        else if (readStatement.getTargetDec().getType() == STRING){
+//            res.add("FileURLIO.readValueFromFile(");
+//            readStatement.getSource().visit(this, res.str);
+//            res.add(")");
+//            return res.str;
+//        }
         else {
             readStatement.getSource().visit(this, res.getString());
+            //if reading from console
+            //Types.Type targetType = readStatement.getTargetDec().getType();
+            //res.readConsoleExpr((targetType));
         }
         return res.getString();
     }
@@ -844,7 +905,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDef(NameDef nameDefintion, Object arg) throws Exception {
-        //System.out.println("visit name definition");
+        System.out.println("visit name definition");
         StringBuilder sb = (StringBuilder) arg;
         if(nameDefintion.getType() == COLOR){
             global_type = nameDefintion.getType();
@@ -863,7 +924,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDefWithDim(NameDefWithDim nameDefWithDim, Object arg) throws Exception {
-        //System.out.println("visit name definition with dim");
+        System.out.println("visit name definition with dim");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         String typeLowerCase = StringToLowercase(nameDefWithDim.getType());
         global_type = nameDefWithDim.getType();
@@ -877,7 +938,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws Exception {
-        //System.out.println("visit return statement");
+        System.out.println("visit return statement");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Expr expr = returnStatement.getExpr();
         res.returnStatement();
@@ -887,7 +948,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitVarDeclaration(VarDeclaration declaration, Object arg) throws Exception {
-        //System.out.println("visit var declration");
+        System.out.println("visit var declration");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         declaration.getNameDef().visit(this, res.str);
         if(declaration.getExpr() != null) {
@@ -904,8 +965,10 @@ public class CodeGenVisitor implements ASTVisitor {
                         if(declaration.getExpr().getType() == IMAGE) {
                             res.add(",");
                             declaration.getDim().getWidth().visit(this, res.str);
+                            //res.add(declaration.getExpr().getText() + ".getWidth()");
                             res.add(",");
                             declaration.getDim().getHeight().visit(this, res.str);
+                            //res.add(declaration.getExpr().getText() + ".getHeight()");
                             res.add(")");
                         }
                         else {
@@ -949,6 +1012,7 @@ public class CodeGenVisitor implements ASTVisitor {
                         res.add("ImageOps.clone(");
                         declaration.getExpr().visit(this, res.str);
                         res.add(")");
+                        //declaration.getExpr().visit(this, res.str);
                     }
                     else {
                         res.add("FileURLIO.readImage(");
@@ -966,6 +1030,11 @@ public class CodeGenVisitor implements ASTVisitor {
                     declaration.getExpr().visit(this, res.str);
                     res.add(')');
                 }
+//                else if (declaration.getExpr().getType() == FLOAT){
+//                    res.add("(float) FileURLIO.readValueFromFile(");
+//                    declaration.getExpr().visit(this, res.str);
+//                    res.add(")");
+//                }
                 else if (declaration.getExpr().getType() == STRING){
                     res.add("(ColorTuple) FileURLIO.readValueFromFile(");
                     declaration.getExpr().visit(this, res.str);
@@ -1000,6 +1069,9 @@ public class CodeGenVisitor implements ASTVisitor {
                     declaration.getExpr().visit(this, res.str);
                     res.add(")");
                 }
+                //res.add("(String) FileURLIO.readValueFromFile(");
+                //declaration.getExpr().visit(this, res.str);
+                //res.add(")");
             }
             //General case of a varDeclaration
             else {
@@ -1013,10 +1085,13 @@ public class CodeGenVisitor implements ASTVisitor {
         }
         //Image without expression cases
         else if(declaration.getExpr() == null && declaration.getType() == IMAGE) {
+
             if(declaration.getDim() != null) {
                 res.add(" = new BufferedImage(");
+                //res.add(declaration.getDim().getWidth().getText());
                 declaration.getDim().getWidth().visit(this, res.str);
                 res.add(",");
+                //res.add(declaration.getDim().getHeight().getText());
                 declaration.getDim().getHeight().visit(this, res.str);
                 res.add(",");
                 res.add("BufferedImage.TYPE_INT_RGB");
@@ -1041,7 +1116,7 @@ public class CodeGenVisitor implements ASTVisitor {
 
     @Override
     public Object visitUnaryExprPostfix(UnaryExprPostfix unaryExprPostfix, Object arg) throws Exception {
-        //System.out.println("visit unary expr post fix");
+        System.out.println("visit unary expr post fix");
         StringBuilderDelegate res = new StringBuilderDelegate(arg);
         Expr x = unaryExprPostfix.getSelector().getX();
         Expr y = unaryExprPostfix.getSelector().getY();
